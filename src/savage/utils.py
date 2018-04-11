@@ -129,6 +129,7 @@ class SavageJSONEncoder(json.JSONEncoder):
     can be reloaded into a MySQL/Postgres TIMESTAMP column directly.
     (This was verified on MySQL 5.6 and Postgres 9.6)
     """
+
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
             return obj.isoformat()

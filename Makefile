@@ -1,32 +1,33 @@
-# NOTE: This assumes a single virtualenv setup under the `venv` directory, and bash availability
-#
-SHELL:=/bin/bash
-VENV_DIR=venv
-VENV_ACTIVATE=$(VENV_DIR)/bin/activate
-
-default: clean install
+default: clean install lint tests
 
 # ---- Install ----
 $(VENV_ACTIVATE):
-	@virtualenv venv
+	@pipenv shell
 install: $(VENV_ACTIVATE)
-	@test -d venv || virtualenv venv
-	@. $(VENV_ACTIVATE); pip install -r requirements.txt
+	@pipenv install -e --dev .
 clean: clean-pyc
-	@rm -rf venv
+	@pipenv --rm
 clean-pyc:
-	@ find ./savage -name "*.pyc" -exec rm -rf {} \;
+	@find ./ -name "*.pyc" -exec rm -rf {} \;
+
+# ---- Tests ----
+lint:
+	@pipenv run flake8
+tests:
+	@pipenv run pytest --cov=.
 
 # --- Formatting ---
 
+autopep8:
+	@pipenv run autopep8 --in-place --recursive .
 isort:
-	@. $(VENV_ACTIVATE); isort -rc -p savage -p tests .
+	@pipenv run isort -rc -p savage -p tests .
 
 # --- Tools ---
 
 console:
-	@. $(VENV_ACTIVATE); ipython
+	@pipenv run ipython
 pg_shell:
 	@docker-compose run --rm postgres /usr/bin/psql -h postgres -U postgres
 
-.PHONY: install clean clean-pyc isort console pg_shell
+.PHONY: install clean clean-pyc lint tests autopep8 isort console pg_shell
