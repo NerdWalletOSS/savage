@@ -2,8 +2,14 @@ language: python
 python:
     - "2.7"
 
-# command to install dependencies
-install: "make install"
+services:
+  - docker
 
-# command to run tests
-script: "make tests"
+install:
+  - make install
+
+before_script:
+  - docker-compose up -d
+
+script:
+  - make tests
