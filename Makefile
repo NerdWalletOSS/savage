@@ -1,9 +1,9 @@
 default: clean install lint tests
 
 # ---- Install ----
-$(VENV_ACTIVATE):
-	@pipenv shell
-install: $(VENV_ACTIVATE)
+init:
+	@pip install pipenv
+install: init
 	@pipenv install -e --dev .
 clean: clean-pyc
 	@pipenv --rm
