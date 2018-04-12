@@ -2,10 +2,23 @@ language: python
 python:
     - "2.7"
 
+cache:
+  - pip
+
 services:
   - docker
 
 install:
+  # Let's stop postgresql
+  - sudo service postgresql stop
+  # wait for postgresql to shutdown
+  - while sudo lsof -Pi :5432 -sTCP:LISTEN -t; do sleep 1; done
+
+  # Print out the current docker-compose version.
+  - docker-compose --version
+
+  # Install pipenv, and use it to install dev dependencies
+  # TODO: Update to only install test dependencies
   - make install
 
 before_script:
