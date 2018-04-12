@@ -6,25 +6,12 @@ cache:
   - pip
 
 services:
-  - docker
+  - postgresql
+
+addons:
+  postgresql: "9.6"
 
 install:
-  # Let's stop postgresql
-  - sudo service postgresql stop
-  # wait for postgresql to shutdown
-  - while sudo lsof -Pi :5432 -sTCP:LISTEN -t; do sleep 1; done
-
-  # Print out the current docker-compose version.
-  - docker-compose --version
-
-  # Start up Docker in the background
-  - docker-compose up -d
-
-  # You will want this for logging. If one of your containers does not build for
-  # whatever reason it's best to report that now before your tests start
-  # otherwise it can be really tricky to debug why tests are failing sometimes.
-  - docker ps
-
   # Install pipenv, and use it to install dev dependencies
   # TODO: Update to only install test dependencies
   - make install
