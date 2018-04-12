@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from psycopg2 import connect
 from sqlalchemy.orm import sessionmaker
 
-PG_CONFIG = dict(user='postgres', password='', host='localhost', port=5432)
+PG_CONFIG = dict(user='postgres', password='', host='0.0.0.0', port=5432)
 CI_PG_CONFIG = dict()
 
 MASTER_DATABASE = 'postgres'
