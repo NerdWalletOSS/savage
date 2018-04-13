@@ -96,6 +96,7 @@ class TestTableSavage(SavageBase, SavageModelMixin):
     id = sa.Column(sa.Integer, primary_key=True)
     value = sa.Column(sa.String(128))
 
+
 print 'Running Savage test...',
 conn = engine.connect()
 new_environment(SavageBase, conn)
