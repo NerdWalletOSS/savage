@@ -21,6 +21,7 @@ docs/_build/
 venv/
 
 # pipenv
+.venv/
 Pipfile.lock
 
 # Project files
