@@ -1,4 +1,7 @@
 # savage
+[![Build Status](https://travis-ci.org/NerdWalletOSS/savage.svg?branch=master)](https://travis-ci.org/NerdWalletOSS/savage)
+![PyPI](https://img.shields.io/pypi/v/savage.svg)
+
 
 A library built on top of the SQLAlchemy ORM for versioning row changes to PostgreSQL tables.
 
@@ -39,8 +42,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.schema import UniqueConstraint
 
-from nerdwallet.savage import init
-from nerdwallet.savage.models import SavageLogMixin, SavageModelMixin
+from savage import init
+from savage.models import SavageLogMixin, SavageModelMixin
 
 POSTGRESQL_URL = '<insert postgresql url here>'
 engine = create_engine(POSTGRESQL_URL)
@@ -69,7 +72,21 @@ Example.register(ExampleArchive, engine)  # Call this once per engine, AFTER ini
 
 ## Latency
 
-TODO: Regenerate stats for `savage` vs. `versionalchemy`
+We compared the results of [benchmark.py](https://gist.github.com/akshaynanavati/f1e816596d100a33e4b4a9c48099a8b7) to
+a comparable [benchmark.py](https://github.com/NerdWalletOSS/savage/blob/master/benchmark.py) written for Savage. It times the performance of inserts using SQLAlchemy core, ORM
+with and without version tracking, and (for Savage only) bulk inserts with versioning.
+
+The below stats were generated for 100,000 records using local Docker containers with MySQL and Postgres (average of 3 runs).
+
+|        | Core Inserts | ORM Inserts | Versioned ORM | Bulk Versioning
+|--------|:------------:|:-----------:|:-------------:|:---------------:
+| VersionAlchemy/MySQL 5.6 | 135 s. | 203 s. | 489 s. | _unsupported_
+| Savage/Postgres 9.6 | 154 s. (**-12%**) | 177 s. (**+15%**) | 283 s. (**+73%**) | 17.7 s. (**+2,658%**)
+
+* VersionAlchemy: ~5 ms./record
+* Savage: ~3 ms./record
+* Bulk insert/archive with Savage: ~180 µs./record (!!)
+
 
 ## Caveats
 
