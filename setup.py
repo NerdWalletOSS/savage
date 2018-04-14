@@ -49,6 +49,7 @@ setup(
     url=url,
     description='Automatic version tracking for SQLAlchemy + PostgreSQL (based on versionalchemy)',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     download_url=download_url,
     classifiers=[c for c in classifiers.split("\n") if c],
     license='MIT License',
