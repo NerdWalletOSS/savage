@@ -6,7 +6,7 @@ default: clean install lint tests
 
 install:
 ifndef PIPENV
-    @pip install pipenv
+	@pip install pipenv
 endif
 ifeq ($(CI), "true")
 	@pipenv install --dev --skip-lock
