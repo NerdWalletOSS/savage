@@ -2,7 +2,6 @@
 [![Build Status](https://travis-ci.org/NerdWalletOSS/savage.svg?branch=master)](https://travis-ci.org/NerdWalletOSS/savage)
 ![PyPI](https://img.shields.io/pypi/v/savage.svg)
 
-
 A library built on top of the SQLAlchemy ORM for versioning row changes to PostgreSQL tables.
 
 Based on [versionalchemy](https://github.com/NerdWalletOSS/versionalchemy)

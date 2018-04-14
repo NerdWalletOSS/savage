@@ -24,7 +24,7 @@ with open('README.md') as f:
     long_description = f.read()
 url = 'https://github.com/NerdWalletOSS/savage'
 download_url = '{}/archive/v{}'.format(url, version)
-classifiers = """\
+classifiers = """
 Development Status :: 5 - Production/Stable
 Intended Audience :: Developers
 License :: OSI Approved :: MIT License
@@ -37,11 +37,21 @@ Topic :: Database :: Front-Ends
 Topic :: Software Development
 Topic :: Software Development :: Libraries :: Python Modules
 Operating System :: OS Independent
-""".split("\n")
+"""
 
 setup(
     name='savage',
     version=version,
+    author='Jeremy Lewis',
+    author_email='jlewis@nerdwallet.com',
+    maintainer='Jeremy Lewis',
+    maintainer_email='jlewis@nerdwallet.com',
+    url=url,
+    description='Automatic version tracking for SQLAlchemy + PostgreSQL (based on versionalchemy)',
+    long_description=long_description,
+    download_url=download_url,
+    classifiers=[c for c in classifiers.split("\n") if c],
+    license='MIT License',
     packages=find_packages('src'),
     package_dir={'': 'src'},
     install_requires=install_requires,
@@ -50,12 +60,4 @@ setup(
         'test': test_requires
     },
     include_package_data=True,
-    author='Jeremy Lewis',
-    author_email='jlewis@nerdwallet.com',
-    license='MIT License',
-    classifiers=classifiers,
-    description='Automatic version tracking for SQLAlchemy + PostgreSQL (based on versionalchemy)',
-    long_description=long_description,
-    url=url,
-    download_url=download_url,
 )
