@@ -8,7 +8,7 @@ install:
 ifndef PIPENV
 	@pip install pipenv
 endif
-ifeq ($(CI), "true")
+ifeq ($(CI),true)
 	@pipenv install --dev --skip-lock
 else
 	@pipenv install -e --dev .
