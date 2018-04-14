@@ -1,14 +1,21 @@
+ENV := $(shell uname)
 PIPENV := $(shell command -v pipenv 2> /dev/null)
 
-default: clean install lint tests
+default: install lint tests
 
 # ---- Install ----
 
-install:
+pipenv:
 ifndef PIPENV
-	@pip install pipenv
+	ifeq ($(ENV),Darwin)
+		@brew install pipenv
+	else
+		@pip install pipenv
+	endif
 endif
-ifeq ($(CI),true)
+
+install: pipenv
+ifdef CI
 	@pipenv install --dev --skip-lock
 else
 	@pipenv install -e --dev .
@@ -28,6 +35,8 @@ tests:
 	@pipenv run pytest --cov=. tests
 
 # --- Formatting ---
+
+format: isort autopep8
 
 autopep8:
 	@pipenv run autopep8 --in-place --recursive .
