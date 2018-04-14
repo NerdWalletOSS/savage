@@ -14,14 +14,13 @@ addons:
 install:
 - make install
 script:
-- make lint
-- make tests
+- make lint tests
 deploy:
   provider: pypi
   user: luislew
   password:
     secure: Cy1MROrVynCIx99+QgMpNMv2ZtFL3BpRwQQxdtes1dKgQMetaE3PEOebGj7mvA0lInPmQGmBA0vX205wZnc+lg4+69JIyWRXbx7bKnIiypG6mzdvGJjlzuJkhtVNvd/ntozXBP3pjV9A1bDHtamwMvDCEgtA9IDTRXwqGJ6IN1SpeUP5OSQzahog2oa7e3NOS8h93vYBhj1lWBAOb2lTlcjf1H6SNDwGMQ2cRSoMRJBlKXV/2YW9GEfSeU7sw8ZUtcKXYQ4MjrU3KnKY+FBymOK+1jf4NYJvzm0GFzRr3lncICBu96WvLeGd9lyDq7kHLSm0heANpgBtZx5SY/HKLCTBLX/xpuADeySl3E8gpiJE50ZaNPCVX4eoNdXFdlpEuC2BfOnwnb9qELK0a8rpN+5EHTNDx0Q6qDGs/41PBCVMaxsYZF4wz7aYNEXqxdRNN/be4pHtZv6F8oyRkwxUot/DAfqIFpUAcGTQlHGrEUBos7344AZadmf2kjzTIhGRwD2k+MfGWlZsU6VuxetYiCjmSjS91EfFd1+TV+y9sFQzG/poEVgtT/CV5aq6pm/NDshLGUL2Ugy91qNeCYOBf85WDE92aWl5XZgVfxCpNz0JWSrzns3a1Ji/FC1N4I/c7DtbP+B7bXNuJytZoe0or9HIfBSzTEvws1DXzr1y0Ac=
   on:
-    branches: master
     distributions: sdist bdist_wheel
     repo: NerdWalletOSS/savage
+    tags: true
