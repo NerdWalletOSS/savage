@@ -16,7 +16,7 @@ endif
 
 install: pipenv
 ifdef CI
-	@pipenv install --dev --skip-lock
+	@pipenv install --dev
 else
 	@pipenv install -e --dev .
 endif
