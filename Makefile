@@ -7,11 +7,11 @@ default: install lint tests
 
 pipenv:
 ifndef PIPENV
-	ifeq ($(ENV),Darwin)
-		@brew install pipenv
-	else
-		@pip install pipenv
-	endif
+ifeq ($(ENV),Darwin)
+	@brew install pipenv
+else
+	@pip install pipenv
+endif
 endif
 
 install: pipenv
