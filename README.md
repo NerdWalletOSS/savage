@@ -121,6 +121,10 @@ db.session.add(example)
 db.session.commit()
 ```
 
+## Why is it called Savage?
+
+**S**QL**A**lchemy**V**ersion**A**lchemyPost**g**r**e**s
+
 ## Style
 
 - Follow PEP8 with a line length of 100 characters

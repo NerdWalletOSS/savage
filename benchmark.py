@@ -1,6 +1,6 @@
-from contextlib import contextmanager
 import sys
 import time
+from contextlib import contextmanager
 
 import sqlalchemy as sa
 from sqlalchemy import create_engine
@@ -12,7 +12,6 @@ from sqlalchemy.sql.expression import insert
 import savage
 from savage.models import SavageLogMixin, SavageModelMixin
 from tests.db_utils import create_test_db, drop_test_db, get_test_database_url
-
 
 # --- Setup test database ---
 drop_test_db()
