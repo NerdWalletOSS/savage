@@ -23,7 +23,7 @@ with open('VERSION') as version_fd:
 with open('README.md') as f:
     long_description = f.read()
 url = 'https://github.com/NerdWalletOSS/savage'
-download_url = '{}/archive/v{}'.format(url, version)
+download_url = '{}/archive/v{}.tar.gz'.format(url, version)
 classifiers = """
 Development Status :: 5 - Production/Stable
 Intended Audience :: Developers
