@@ -64,7 +64,7 @@ class SavageLogMixin(object):
         return data
 
     @classmethod
-    def bulk_archive_rows(cls, rows, session, user_id=None, chunk_size=1000):
+    def bulk_archive_rows(cls, rows, session, user_id=None, chunk_size=1000, commit=True):
         """
         Bulk archives data previously written to DB.
 
@@ -88,7 +88,8 @@ class SavageLogMixin(object):
         # Insert final batch of rows (if any)
         if to_insert_dicts:
             session.execute(insert(cls).values(to_insert_dicts))
-        session.commit()
+        if commit:
+            session.commit()
 
     @classmethod
     def _validate(cls, engine, *version_cols):

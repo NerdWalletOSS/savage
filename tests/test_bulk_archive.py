@@ -39,3 +39,9 @@ def test_bulk_archive_rows_chunk_size(mocker, session, rows_to_archive):
     mocker.spy(session, 'execute')
     ArchiveTable.bulk_archive_rows(rows_to_archive, session, chunk_size=1)  # Ensure three chunks
     assert session.execute.call_count == 3
+
+
+def test_bulk_archive_rows_commit_false(mocker, session, rows_to_archive):
+    mocker.spy(session, 'commit')
+    ArchiveTable.bulk_archive_rows(rows_to_archive, session, commit=False)
+    assert not session.commit.called
