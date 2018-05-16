@@ -56,8 +56,8 @@ setup(
     packages=find_packages('src'),
     package_dir={'': 'src'},
     package_data={'': [
-        'LICENSE',
-        'VERSION',
+        '../LICENSE',
+        '../VERSION',
     ]},
     install_requires=install_requires,
     extras_require={
