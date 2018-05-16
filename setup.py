@@ -55,10 +55,6 @@ setup(
     license='MIT License',
     packages=find_packages('src'),
     package_dir={'': 'src'},
-    package_data={'': [
-        '../LICENSE',
-        '../VERSION',
-    ]},
     install_requires=install_requires,
     extras_require={
         'dev': dev_requires,
