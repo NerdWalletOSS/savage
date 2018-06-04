@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from psycopg2.extensions import AsIs
-from sqlalchemy import BigInteger, Boolean, Column, DateTime, insert, inspect, Integer, text
+from sqlalchemy import BigInteger, Boolean, Column, DateTime, func, insert, inspect, Integer, text
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
@@ -28,10 +28,11 @@ class SavageLogMixin(object):
     archive_id = Column(Integer, primary_key=True, autoincrement=True)
     version_id = Column(BigInteger, nullable=False, index=True)
     deleted = Column(Boolean, nullable=False)
-    updated_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
     data = Column(postgresql.JSONB, nullable=False)
 
     __mapper_args__ = {
+        'eager_defaults': True,  # Avoid unnecessary select to fetch updated_at
         'version_id_col': version_id,
         'version_id_generator': False
     }
@@ -142,7 +143,7 @@ class SavageModelMixin(object):
         BigInteger,
         nullable=False,
         server_default=current_version_sql(),
-        server_onupdate=current_version_sql()
+        onupdate=current_version_sql()
     )
 
     __mapper_args__ = {
