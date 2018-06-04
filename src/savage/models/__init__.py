@@ -1,8 +1,20 @@
 from datetime import datetime
 
 from psycopg2.extensions import AsIs
-from sqlalchemy import BigInteger, Boolean, Column, DateTime, func, insert, inspect, Integer, text
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Column,
+    DateTime,
+    func,
+    Index,
+    insert,
+    inspect,
+    Integer,
+    text,
+)
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
 from savage import utils
@@ -36,6 +48,12 @@ class SavageLogMixin(object):
         'version_id_col': version_id,
         'version_id_generator': False
     }
+
+    @declared_attr
+    def __table_args__(cls):
+        return (
+            Index('index_{}_on_data_gin'.format(cls.__tablename__), 'data', postgresql_using='gin'),
+        )
 
     @classmethod
     def build_row_dict(cls, row, dialect, deleted=False, user_id=None, use_dirty=True):
