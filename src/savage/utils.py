@@ -4,6 +4,7 @@ from functools import partial
 
 import simplejson as json
 from sqlalchemy import inspect, UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSON, JSONB
 from sqlalchemy.engine.reflection import Inspector
 
 
@@ -35,7 +36,13 @@ def get_column_attribute(row, col_name, use_dirty=True, dialect=None):
 
     bind_processor = None
     if dialect:
-        bind_processor = getattr(type(row), col_name).type.bind_processor(dialect)
+        column_type = getattr(type(row), col_name).type
+        # NOTE: The bind processors for JSON columns will return strings,
+        # but we want to preserve the JSON dictionaries when archiving row data.
+        # Original issue: https://github.com/NerdWalletOSS/savage/issues/8
+        dialect_impl = column_type.dialect_impl(dialect)
+        if not isinstance(dialect_impl, (JSON, JSONB)):
+            bind_processor = column_type.bind_processor(dialect)
     bind_processor = bind_processor or identity
     current_value = bind_processor(getattr(row, col_name))
     if use_dirty:

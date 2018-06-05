@@ -18,6 +18,10 @@ def saved_model(session):
     return model
 
 
+def assert_expected_attr_value(row, attr, expected_value, **kwargs):
+    assert utils.get_column_attribute(row, attr, **kwargs) == expected_value
+
+
 def test_result_to_dict(session, saved_model):
     res = session.execute(select([UnarchivedTable]))
     dicts = utils.result_to_dict(res)
@@ -25,30 +29,37 @@ def test_result_to_dict(session, saved_model):
         'id': saved_model.id,
         'name': 'foo',
         'private_attr': None,
-        'created_at': saved_model.created_at
+        'created_at': saved_model.created_at,
+        'jsonb_col': {},
     }
     assert dicts == [expected_dict]
 
 
-def test_get_column_attribute(saved_model):
-    assert utils.get_column_attribute(saved_model, 'name') == 'foo'
+def test_get_column_attribute(saved_model, dialect):
+    assert_expected_attr_value(saved_model, 'name', 'foo', dialect=dialect)
 
 
-def test_get_column_attribute_dirty(session, saved_model):
+def test_get_column_attribute_dirty(saved_model, dialect):
     saved_model.name = 'bar'
-    assert utils.get_column_attribute(saved_model, 'name', use_dirty=False) == 'foo'
+    assert_expected_attr_value(saved_model, 'name', 'foo', use_dirty=False, dialect=dialect)
+
+
+def test_get_column_attribute_json(saved_model, dialect):
+    json_dict = {'foo': 'bar'}
+    saved_model.jsonb_col = json_dict.copy()
+    assert_expected_attr_value(saved_model, 'jsonb_col', json_dict, dialect=dialect)
 
 
 def test_get_column_keys():
     col_keys_gen = utils.get_column_keys(UnarchivedTable)
     assert isinstance(col_keys_gen, types.GeneratorType)
-    assert sorted(col_keys_gen) == ['_private_attr', 'created_at', 'id', 'name']
+    assert sorted(col_keys_gen) == ['_private_attr', 'created_at', 'id', 'jsonb_col', 'name']
 
 
 def test_get_column_names():
     col_keys_gen = utils.get_column_names(UnarchivedTable)
     assert isinstance(col_keys_gen, types.GeneratorType)
-    assert sorted(col_keys_gen) == ['created_at', 'id', 'name', 'private_attr']
+    assert sorted(col_keys_gen) == ['created_at', 'id', 'jsonb_col', 'name', 'private_attr']
 
 
 def test_get_column_keys_and_names():
@@ -58,7 +69,8 @@ def test_get_column_keys_and_names():
         ('_private_attr', 'private_attr'),
         ('created_at', 'created_at'),
         ('id', 'id'),
-        ('name', 'name')
+        ('jsonb_col', 'jsonb_col'),
+        ('name', 'name'),
     ]
 
 

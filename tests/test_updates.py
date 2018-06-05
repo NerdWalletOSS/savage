@@ -115,6 +115,19 @@ def test_product_update_with_user(session, p1_dict, p1):
     verify_archive(updated_dict, updated_version, session, user='test_user2')
 
 
+def test_product_update_with_json(session, p1_dict, p1):
+    version = add_and_return_version(p1, session)
+
+    json_dict = {'foo': 'bar'}
+    p1.jsonb_col = json_dict.copy()
+    updated_version = add_and_return_version(p1, session)
+    updated_dict = dict(p1_dict, jsonb_col=json_dict)
+
+    verify_row(updated_dict, updated_version, session)
+    verify_archive(p1_dict, version, session)
+    verify_archive(updated_dict, updated_version, session)
+
+
 def test_concurrent_product_updates(engine_1, engine_2, user_table, p1_dict, p1):
     """
     Assert that if two separate sessions try to update a product row,

@@ -1,6 +1,5 @@
-import datetime
-
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, UniqueConstraint
+from sqlalchemy import Boolean, Column, DateTime, func, Integer, String, UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 
 from savage.models import SavageLogMixin, SavageModelMixin
@@ -17,7 +16,8 @@ class UserTable(SavageModelMixin, Base):
     col2 = Column(Integer)
     col3 = Column(Boolean)
     col4 = Column('other_name', Integer)
-    col5 = Column(DateTime, default=datetime.datetime.utcnow)
+    col5 = Column(DateTime, server_default=func.now())
+    jsonb_col = Column(JSONB, default=dict)
 
 
 class ArchiveTable(SavageLogMixin, Base):
@@ -61,4 +61,5 @@ class UnarchivedTable(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     _private_attr = Column('private_attr', Integer)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=func.now())
+    jsonb_col = Column(JSONB, default=dict)
