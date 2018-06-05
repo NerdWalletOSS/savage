@@ -33,3 +33,13 @@ def test_insert_new_product_with_user(session, p1_dict, p1):
 
     verify_row(p1_dict, version, session)
     verify_archive(p1_dict, version, session, user='test_user')
+
+
+def test_insert_new_product_with_json(session, p1_dict, p1):
+    json_dict = {'foo': 'bar'}
+    p1.jsonb_col = json_dict.copy()
+    version = add_and_return_version(p1, session)
+
+    expected = dict(jsonb_col=json_dict, **p1_dict)
+    verify_row(expected, version, session)
+    verify_archive(expected, version, session)
