@@ -18,6 +18,10 @@ def saved_model(session):
     return model
 
 
+def assert_expected_attr_value(row, attr, expected_value, **kwargs):
+    assert utils.get_column_attribute(row, attr, **kwargs) == expected_value
+
+
 def test_result_to_dict(session, saved_model):
     res = session.execute(select([UnarchivedTable]))
     dicts = utils.result_to_dict(res)
@@ -32,18 +36,18 @@ def test_result_to_dict(session, saved_model):
 
 
 def test_get_column_attribute(saved_model, dialect):
-    assert utils.get_column_attribute(saved_model, 'name', dialect=dialect) == 'foo'
+    assert_expected_attr_value(saved_model, 'name', 'foo', dialect=dialect)
 
 
 def test_get_column_attribute_dirty(saved_model, dialect):
     saved_model.name = 'bar'
-    assert utils.get_column_attribute(saved_model, 'name', use_dirty=False, dialect=dialect) == 'foo'
+    assert_expected_attr_value(saved_model, 'name', 'foo', use_dirty=False, dialect=dialect)
 
 
 def test_get_column_attribute_json(saved_model, dialect):
     json_dict = {'foo': 'bar'}
     saved_model.jsonb_col = json_dict.copy()
-    assert utils.get_column_attribute(saved_model, 'jsonb_col', dialect=dialect) == json_dict
+    assert_expected_attr_value(saved_model, 'jsonb_col', json_dict, dialect=dialect)
 
 
 def test_get_column_keys():
