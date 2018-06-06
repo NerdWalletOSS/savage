@@ -14,7 +14,7 @@ Session = sessionmaker()
 
 
 def get_pg_config():
-    if os.environ.get('BUILD_NUMBER') is not None:
+    if os.environ.get('CI') is not None:
         # Use CI test database
         return CI_PG_CONFIG
     return PG_CONFIG
