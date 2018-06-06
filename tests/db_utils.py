@@ -4,8 +4,8 @@ from contextlib import contextmanager
 from psycopg2 import connect
 from sqlalchemy.orm import sessionmaker
 
-PG_CONFIG = dict(user='postgres', password='', host='localhost', port=5432)
-CI_PG_CONFIG = dict()
+PG_CONFIG = dict(user='postgres', password='', host='localhost', port=5433)
+CI_PG_CONFIG = dict(PG_CONFIG, port=5432)
 
 MASTER_DATABASE = 'postgres'
 TEST_DATABASE = 'savage_test'
@@ -14,7 +14,7 @@ Session = sessionmaker()
 
 
 def get_pg_config():
-    if os.environ.get('BUILD_NUMBER') is not None:
+    if os.environ.get('CI') is not None:
         # Use CI test database
         return CI_PG_CONFIG
     return PG_CONFIG
