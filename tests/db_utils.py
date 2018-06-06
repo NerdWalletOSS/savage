@@ -5,7 +5,7 @@ from psycopg2 import connect
 from sqlalchemy.orm import sessionmaker
 
 PG_CONFIG = dict(user='postgres', password='', host='localhost', port=5433)
-CI_PG_CONFIG = dict()
+CI_PG_CONFIG = dict(PG_CONFIG, port=5432)
 
 MASTER_DATABASE = 'postgres'
 TEST_DATABASE = 'savage_test'
