@@ -1,10 +1,18 @@
-from sqlalchemy import Boolean, Column, DateTime, func, Integer, String, UniqueConstraint
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Boolean, Column, DateTime, func, Integer, String, types, UniqueConstraint
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
 
 from savage.models import SavageLogMixin, SavageModelMixin
 
 Base = declarative_base()
+
+
+class JSONWrapper(types.TypeDecorator):
+    """Wrapper class to designate JSONB columns tied to dynamic schemas"""
+    impl = postgresql.JSONB
+
+    def compile(self, dialect=None):
+        return super(JSONWrapper, self).compile(postgresql.dialect())
 
 
 class UserTable(SavageModelMixin, Base):
@@ -17,7 +25,7 @@ class UserTable(SavageModelMixin, Base):
     col3 = Column(Boolean)
     col4 = Column('other_name', Integer)
     col5 = Column(DateTime, server_default=func.now())
-    jsonb_col = Column(JSONB, default=dict)
+    jsonb_col = Column(postgresql.JSONB, default=dict)
 
 
 class ArchiveTable(SavageLogMixin, Base):
@@ -62,4 +70,4 @@ class UnarchivedTable(Base):
     name = Column(String)
     _private_attr = Column('private_attr', Integer)
     created_at = Column(DateTime, default=func.now())
-    jsonb_col = Column(JSONB, default=dict)
+    jsonb_col = Column(JSONWrapper, default=dict)
