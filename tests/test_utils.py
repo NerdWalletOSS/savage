@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import select
 
 from savage import utils
-from tests.models import UnarchivedTable
+from tests.models import JSONWrapper, UnarchivedTable
 
 
 @pytest.fixture
@@ -30,7 +30,9 @@ def test_result_to_dict(session, saved_model):
         'name': 'foo',
         'private_attr': None,
         'created_at': saved_model.created_at,
-        'jsonb_col': {},
+        'decorated_jsonb_col': {},
+        'sorted_json_col': {},
+        'wrapped_jsonb_col': JSONWrapper.empty(),
     }
     assert dicts == [expected_dict]
 
@@ -44,22 +46,50 @@ def test_get_column_attribute_dirty(saved_model, dialect):
     assert_expected_attr_value(saved_model, 'name', 'foo', use_dirty=False, dialect=dialect)
 
 
-def test_get_column_attribute_json(saved_model, dialect):
+def test_get_column_attribute_decorated_json(saved_model, dialect):
     json_dict = {'foo': 'bar'}
-    saved_model.jsonb_col = json_dict.copy()
-    assert_expected_attr_value(saved_model, 'jsonb_col', json_dict, dialect=dialect)
+    saved_model.decorated_jsonb_col = json_dict.copy()
+    assert_expected_attr_value(saved_model, 'decorated_jsonb_col', json_dict, dialect=dialect)
+
+
+def test_get_column_attribute_json_subclass(saved_model, dialect):
+    json_dict = {'foo': 'bar'}
+    saved_model.sorted_json_col = json_dict.copy()
+    assert_expected_attr_value(saved_model, 'sorted_json_col', json_dict, dialect=dialect)
+
+
+def test_get_column_attribute_wrapped_json(saved_model, dialect):
+    json_dict = {'foo': 'bar'}
+    saved_model.wrapped_jsonb_col = JSONWrapper(json_dict)
+    assert_expected_attr_value(saved_model, 'wrapped_jsonb_col', json_dict, dialect=dialect)
 
 
 def test_get_column_keys():
     col_keys_gen = utils.get_column_keys(UnarchivedTable)
     assert isinstance(col_keys_gen, types.GeneratorType)
-    assert sorted(col_keys_gen) == ['_private_attr', 'created_at', 'id', 'jsonb_col', 'name']
+    assert sorted(col_keys_gen) == [
+        '_private_attr',
+        'created_at',
+        'decorated_jsonb_col',
+        'id',
+        'name',
+        'sorted_json_col',
+        'wrapped_jsonb_col',
+    ]
 
 
 def test_get_column_names():
     col_keys_gen = utils.get_column_names(UnarchivedTable)
     assert isinstance(col_keys_gen, types.GeneratorType)
-    assert sorted(col_keys_gen) == ['created_at', 'id', 'jsonb_col', 'name', 'private_attr']
+    assert sorted(col_keys_gen) == [
+        'created_at',
+        'decorated_jsonb_col',
+        'id',
+        'name',
+        'private_attr',
+        'sorted_json_col',
+        'wrapped_jsonb_col',
+    ]
 
 
 def test_get_column_keys_and_names():
@@ -68,9 +98,11 @@ def test_get_column_keys_and_names():
     assert sorted(col_keys_gen) == [
         ('_private_attr', 'private_attr'),
         ('created_at', 'created_at'),
+        ('decorated_jsonb_col', 'decorated_jsonb_col'),
         ('id', 'id'),
-        ('jsonb_col', 'jsonb_col'),
         ('name', 'name'),
+        ('sorted_json_col', 'sorted_json_col'),
+        ('wrapped_jsonb_col', 'wrapped_jsonb_col'),
     ]
 
 
