@@ -14,11 +14,11 @@ Author: [Jeremy Lewis](https://www.github.com/luislew/)
 
   1. `INSERT`|`UPDATE`|`DELETE`: Insert/update/delete of the versioned row
 
-  2. `SELECT max(va_version) ...`: Selects the current max `va_version` from archive table based on row
+  2. `SELECT max(version_id) ...`: Selects the current max `version_id` from archive table based on row
 
-  3. `INSERT ...`: Inserts a new row into the archive table, with `va_version` incremented from previous result
+  3. `INSERT ...`: Inserts a new row into the archive table, with `version_id` incremented from previous result
 
-  4. `UPDATE ... SET va_id = ...`: Update versioned row with `va_id`, returned after the previous result executes
+  4. `UPDATE ... SET archive_id = ...`: Update versioned row with `archive_id`, returned after the previous result executes
 
 PostgreSQL has a couple of features that allow for a simpler implementation:
 
@@ -26,7 +26,7 @@ PostgreSQL has a couple of features that allow for a simpler implementation:
 
   * `txid_current()`: System function that returns a monotonically increasing 64-bit int ID for current transaction
 
-Utilizing these two features allows for a much simpler implementation. Instead of storing `va_id` on the archived
+Utilizing these two features allows for a much simpler implementation. Instead of storing `archive_id` on the archived
 table, we store `version_id` (generated server-side using `txid_current()`) on both the archived and archive tables.
 As a result, we don't need to select the max version (b/c it's handled server-side), and we don't need to update
 the archive row with `archive_id`.
@@ -68,6 +68,160 @@ class ExampleArchive(Base, SavageLogMixin):
 init()  # Only call this once
 Example.register(ExampleArchive, engine)  # Call this once per engine, AFTER init()
 ```
+
+Model methods
+----------------
+
+Assume we create a new model:
+
+.. code-block:: python
+
+    item = Example(value='initial') 
+    item._updated_by = 'user_id_1'  # you can use integer user identifier here from your authorized user model, for versionalchemey it is just a tag
+    session.add(item)
+    session.commit()  
+
+
+This will add first version in **example_archive** table and sets **archive_id** on instance, e.g.
+
+.. code-block:: python
+
+    item = session.query(Example).get(item.id)
+    print(item.archive_id)  # 123
+
+
+Now we can use **version_list** to show all versions:
+
+.. code-block:: python
+
+    print(item.version_list(session))
+    # [
+    #		{'archive_id': 123, 'user_id': 'user_id_1', version_id: 0},
+    # ]
+
+
+Let's change value:
+
+.. code-block:: python
+
+    item.val = 'changed'
+    item._updated_by = 'user_id_2'
+    session.commit()
+    print(item.version_list(session))
+    # [
+    #       {'archive_id': 123, 'user_id': 'user_id_1', 'version_id': 0},
+    #       {'archive_id': 124, 'user_id': 'user_id_2', 'version_id': 1},
+    # ]
+
+You can get specific version of model using **version_get**:
+
+.. code-block:: python
+
+    item.version_get(session, archive_id=123)
+    # {
+    #  'archive_id': 123, 
+    #  'id': 1, 
+    #  'value': 'initial'    
+    # }
+
+You can pass `version_id` instead of `archive_id`:
+
+.. code-block:: python
+
+    item.version_get(session, version_id=0)
+    item.version_get(session, 0) # or even
+    # both return same as code snippet above
+
+
+You can also get all revisions:
+
+.. code-block:: python
+
+    item.version_get_all(session)
+    # [
+    #   {
+    #     'archive_id': 123, 
+    #     'id': 1,
+    #     'record': {
+    #       'value': 'initial'
+    #     },
+    #     'user_id': 'user_id_1',
+    #     'version_id': 0
+    #   },
+    #   {
+    #     'archive_id': 124, 
+    #     'id': 1,
+    #     'record': {
+    #       'value': 'changed'
+    #     },
+    #     'user_id': 'user_id_2',
+    #     'version_id': 1
+    #   }
+    # ]
+
+
+To check difference betweeen current and previous versions use **version_diff**:
+
+.. code-block:: python
+
+    item.version_diff(session, archive_id=124) # or item.version_diff(session, version_id=0)
+    # {
+    #   'version_prev_version': 1,
+    #   'version_id': 2,
+    #   'prev_user_id': 'user_id_1',
+    #   'user_id': 'user_id_2',
+    #   'change': {
+    #     'value': {
+    #       'prev': 'initial',
+    #       'this': 'changed'
+    #     }
+    #   }
+    # }
+
+
+**version_diff_all** will show you diffs between all versions:
+
+
+.. code-block:: python
+
+    item.version_diff_all(session)
+    # [
+    #   {
+    #     'version_prev_version': 0,
+    #     'version_id': 1,
+    #     'prev_user_id': None,
+    #     'user_id': 'user_id_1',
+    #     'change': {
+    #       'value': {
+    #         'prev': None,
+    #         'this': 'initial'
+    #       }
+    #     }
+    #   },
+    #   {
+    #     'version_prev_version': 1,
+    #     'version_id': 2,
+    #     'prev_user_id': 'user_id_1',
+    #     'user_id': 'user_id_2',
+    #     'change': {
+    #       'value': {
+    #         'prev': 'initial',
+    #         'this': 'changed'
+    #       }
+    #     }
+    #   },
+    # ]
+
+
+
+You can restore some previous version using **version_restore**:
+
+.. code-block:: python
+
+    item.version_restore(session, archive_id=123)  # or item.version_restore(session, version_id=0)
+    item = session.query(Example).get(item.id)
+    print(item.value)  # initial
+    
 
 ## Latency
 
