@@ -1,6 +1,7 @@
 import datetime
 import itertools
 from functools import partial
+import sys
 
 import simplejson as json
 from sqlalchemy import inspect, TypeDecorator, UniqueConstraint
@@ -16,7 +17,49 @@ def result_to_dict(res):
     is the column name and the value is the value of that column.
     """
     keys = res.keys()
-    return [dict(itertools.izip(keys, row)) for row in res]
+    return [dict(zip(keys, row)) for row in res]
+
+
+def compare_dicts(old_d, new_d):
+    if not old_d:
+        old_d = {}
+        for key in new_d.keys():
+            old_d[key]=None
+
+    changed_values_set = set.symmetric_difference(set(old_d.items()), set(new_d.items()))
+    changes = {}
+    for pair in list(changed_values_set):
+        if pair[0] not in changes:
+            changes[pair[0]] = {}
+        if pair[0] in new_d:
+            if pair[0] in old_d:
+                prev_or_this = 'this' if pair in new_d.items() else "prev"
+                changes[pair[0]][prev_or_this] = pair[1]
+            else:
+                changes[pair[0]]['prev'] = None
+                changes[pair[0]]['this'] = pair[1]
+        elif pair[0] in old_d:
+            changes[pair[0]]['prev'] = pair[1]
+            changes[pair[0]]['this'] = None
+    return changes
+
+
+def compare_rows(old_r, new_r):
+    if not old_r:
+        old_r = {}
+        for key in new_r.keys():
+            old_r[key] = None
+    return {
+        'prev_archive_id': old_r['archive_id'],
+        'new_archive_id': new_r['archive_id'],
+        'prev_deleted': new_r['deleted'],
+        'new_deleted': new_r['deleted'],
+        'prev_updated_at': new_r['updated_at'],
+        'new_updated_at': new_r['updated_at'],
+        'prev_user_id': old_r['user_id'],
+        'new_user_id': new_r['user_id'],
+        'change': compare_dicts(old_r['data'], new_r['data'])
+    }
 
 
 def get_bind_processor(column_type, dialect):
