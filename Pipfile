@@ -9,6 +9,7 @@ simplejson = ">=3.0"
 six = ">=1.10.0"
 SQLAlchemy = ">=1.0"
 "e1839a8" = {path = ".", editable = true}
+"arrow" = "*"
 
 [dev-packages]
 "autopep8" = ">=1.3.5"
@@ -19,6 +20,7 @@ pytest = "*"
 "pytest-cov" = "*"
 "pytest-mock" = "*"
 "e1839a8" = {path = ".", editable = true}
+"arrow" = "*"
 
 [requires]
 python_version = "2.7"

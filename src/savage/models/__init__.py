@@ -1,5 +1,8 @@
+import logging
 from datetime import datetime
 
+import arrow
+import sqlalchemy as sa
 from psycopg2.extensions import AsIs
 from sqlalchemy import (
     BigInteger,
@@ -13,13 +16,14 @@ from sqlalchemy import (
     Integer,
     text,
 )
-import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 
 from savage import utils
 from savage.exceptions import LogTableCreationError, RestoreError, LogIdentifyError, HistoryItemNotFound
+
+log = logging.getLogger(__name__)
 
 
 def current_version_sql(as_is=False):
@@ -238,7 +242,7 @@ class SavageModelMixin(object):
         """
         result = session.execute(
             sa.select([self.ArchiveTable.version_id]).
-            where(self.ArchiveTable.archive_id == self.archive_id)
+                where(self.ArchiveTable.archive_id == self.archive_id)
         ).first()
         return result[0]
 
@@ -265,7 +269,7 @@ class SavageModelMixin(object):
         """
         return utils.result_to_dict(session.execute(
             sa.select([cls.ArchiveTable.archive_id, cls.ArchiveTable.user_id, cls.ArchiveTable.version_id])
-            .where(cls.create_log_select_expression(kwargs))
+                .where(cls.create_log_select_expression(kwargs))
         ))
 
     def get_row_identifier(self):
@@ -296,8 +300,9 @@ class SavageModelMixin(object):
         :rtype: dict
         """
         if version_id is not None and archive_id is not None:
-            log.warning("both version_id and archive_id provided, only version_id will be used, please exclude one of them "
-                        "from call")
+            log.warning(
+                "both version_id and archive_id provided, only version_id will be used, please exclude one of them "
+                "from call")
 
         if version_id is None and archive_id is None:
             raise LogIdentifyError("Please provide at least one from version_id, archive_id to identify column")
@@ -308,7 +313,7 @@ class SavageModelMixin(object):
             filter_condition = (cls.ArchiveTable.archive_id == archive_id,)
 
         result = utils.result_to_dict(session.execute(
-                sa.select({cls.ArchiveTable.archive_id, cls.ArchiveTable.data})
+            sa.select({cls.ArchiveTable.archive_id, cls.ArchiveTable.data})
                 .where(*filter_condition)
         ))
 
@@ -375,8 +380,9 @@ class SavageModelMixin(object):
         :return: dict
         """
         if version_id is not None and archive_id is not None:
-            log.warning("both version_id and archive_id provided, only version_id will be used, please exclude one of them "
-                        "from call")
+            log.warning(
+                "both version_id and archive_id provided, only version_id will be used, please exclude one of them "
+                "from call")
 
         if version_id is None and archive_id is None:
             raise LogIdentifyError("Please provide at least one from version_id, archive_id to identify column")
@@ -399,7 +405,7 @@ class SavageModelMixin(object):
 
         archive_id = this_row['archive_id']
         all_history_items = {
-           col_name: this_row[col_name] for col_name in cls.ArchiveTable._version_col_names
+            col_name: this_row[col_name] for col_name in cls.ArchiveTable._version_col_names
         }
         prev_log = [
             log for log in cls.version_list_by_pk(session, **all_history_items) if log['archive_id'] < archive_id
@@ -409,7 +415,7 @@ class SavageModelMixin(object):
 
         prev_archive_id = prev_log[-1]['archive_id']
         prev_row = utils.result_to_dict(session.execute(
-                sa.select({cls.ArchiveTable})
+            sa.select({cls.ArchiveTable})
                 .where(cls.ArchiveTable.archive_id == prev_archive_id)
         ))[0]
 
@@ -429,7 +435,7 @@ class SavageModelMixin(object):
             if i is 0:
                 all_changes.append(utils.compare_rows(None, all_history_items[i]))
             else:
-                all_changes.append(utils.compare_rows(all_history_items[i-1], all_history_items[i]))
+                all_changes.append(utils.compare_rows(all_history_items[i - 1], all_history_items[i]))
 
         return all_changes
 
