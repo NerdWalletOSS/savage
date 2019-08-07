@@ -30,16 +30,16 @@ def delete(table, session, conds):
 
 
 def get(
-    table,
-    session,
-    version_id=None,
-    t1=None,
-    t2=None,
-    fields=None,
-    conds=None,
-    include_deleted=True,
-    page=1,
-    page_size=100,
+        table,
+        session,
+        version_id=None,
+        t1=None,
+        t2=None,
+        fields=None,
+        conds=None,
+        include_deleted=True,
+        page=1,
+        page_size=100,
 ):
     """
     :param table: the model class which inherits from
@@ -76,10 +76,10 @@ def get(
     if version_id is not None:
         return _format_response(utils.result_to_dict(session.execute(
             sa.select([table.ArchiveTable])
-            .where(table.ArchiveTable.version_id > version_id)
-            .order_by(*_get_order_clause(table.ArchiveTable))
-            .limit(page_size)
-            .offset(offset)
+                .where(table.ArchiveTable.version_id > version_id)
+                .order_by(*_get_order_clause(table.ArchiveTable))
+                .limit(page_size)
+                .offset(offset)
         )), fields, version_col_names)
 
     if t1 is None and t2 is None:
@@ -135,8 +135,8 @@ def _format_response(rows, fields, unique_col_names):
             data = row['data']
             pruned_data = {k: data.get(k) for k in fields}
             if (
-                pruned_data != output[-1]['data'] or
-                row['deleted'] != output[-1]['deleted']
+                    pruned_data != output[-1]['data'] or
+                    row['deleted'] != output[-1]['deleted']
             ):
                 formatted['data'] = pruned_data
                 output.append(formatted)
@@ -205,10 +205,10 @@ def _get_historical_changes(table, session, conds, t1, t2, include_deleted, limi
 
     return utils.result_to_dict(session.execute(
         sa.select([table.ArchiveTable])
-        .where(and_clause)
-        .order_by(*_get_order_clause(table.ArchiveTable))
-        .limit(limit)
-        .offset(offset)
+            .where(and_clause)
+            .order_by(*_get_order_clause(table.ArchiveTable))
+            .limit(limit)
+            .offset(offset)
     ))
 
 
@@ -224,7 +224,7 @@ def _get_historical_time_slice(table, session, t, conds, include_deleted, limit,
     t2 = at.__table__.alias('t2')
     return utils.result_to_dict(session.execute(
         sa.select([at])
-        .select_from(at.__table__.join(
+            .select_from(at.__table__.join(
             t2,
             sa.and_(
                 t2.c.updated_at <= t,
@@ -233,10 +233,10 @@ def _get_historical_time_slice(table, session, t, conds, include_deleted, limit,
             ),
             isouter=True,
         ))
-        .where(t2.c.version_id.is_(None) & and_clause)
-        .order_by(*_get_order_clause(at))
-        .limit(limit)
-        .offset(offset)
+            .where(t2.c.version_id.is_(None) & and_clause)
+            .order_by(*_get_order_clause(at))
+            .limit(limit)
+            .offset(offset)
     ))
 
 
@@ -258,10 +258,10 @@ def _get_latest_time_slice(table, session, conds, include_deleted, limit, offset
                 )
             )
         )
-        .where(and_clause)
-        .order_by(*_get_order_clause(table.ArchiveTable))
-        .limit(limit)
-        .offset(offset)
+            .where(and_clause)
+            .order_by(*_get_order_clause(table.ArchiveTable))
+            .limit(limit)
+            .offset(offset)
     )
     return utils.result_to_dict(result)
 

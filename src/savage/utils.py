@@ -52,9 +52,9 @@ def compare_rows(old_r, new_r):
     return {
         'prev_archive_id': old_r['archive_id'],
         'new_archive_id': new_r['archive_id'],
-        'prev_deleted': new_r['deleted'],
+        'prev_deleted': old_r['deleted'],
         'new_deleted': new_r['deleted'],
-        'prev_updated_at': new_r['updated_at'],
+        'prev_updated_at': old_r['updated_at'],
         'new_updated_at': new_r['updated_at'],
         'prev_user_id': old_r['user_id'],
         'new_user_id': new_r['user_id'],
