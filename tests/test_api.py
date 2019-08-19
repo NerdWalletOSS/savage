@@ -1,11 +1,13 @@
-import copy
-from datetime import datetime
-from itertools import chain, izip
+from __future__ import absolute_import
 
-import mock
+import copy
+import json
+from datetime import datetime
+from itertools import chain
+
 import pytest
-import simplejson as json
 import sqlalchemy as sa
+from six.moves import range, zip
 from sqlalchemy import func
 
 from savage.api import delete, get
@@ -35,36 +37,33 @@ def t4():
 
 
 @pytest.fixture
-def get_api_test_setup(session, p1, p2, p3, t1, t2, t3, t4):
+def get_api_test_setup(mocker, session, p1, p2, p3, t1, t2, t3, t4):
+    mock_datetime = mocker.patch('savage.models.datetime')
     p1_history, p2_history, p3_history = [], [], []
 
-    with mock.patch('savage.models.datetime') as p:
-        p.now.return_value = t1
-        versions = add_multiple_and_return_versions([p1, p3], session)
-        p1_history.append(_history(p1, t1, versions[0], session))
-        p3_history.append(_history(p3, t1, versions[1], session))
+    mock_datetime.utcnow.return_value = t1
+    versions = add_multiple_and_return_versions([p1, p3], session)
+    p1_history.append(_history(p1, t1, versions[0], session))
+    p3_history.append(_history(p3, t1, versions[1], session))
 
     p1.col1 = 'change1'
-    with mock.patch('savage.models.datetime') as p:
-        p.now.return_value = t2
-        versions = add_multiple_and_return_versions([p1, p2], session)
-        p1_history.append(_history(p1, t2, versions[0], session))
-        p2_history.append(_history(p2, t2, versions[1], session))
+    mock_datetime.utcnow.return_value = t2
+    versions = add_multiple_and_return_versions([p1, p2], session)
+    p1_history.append(_history(p1, t2, versions[0], session))
+    p2_history.append(_history(p2, t2, versions[1], session))
 
     p1.col3 = False
     p1.col1 = 'change2'
-    with mock.patch('savage.models.datetime') as p:
-        p.now.return_value = t3
-        version = add_and_return_version(p1, session)
-        p1_history.append(_history(p1, t3, version, session))
+    mock_datetime.utcnow.return_value = t3
+    version = add_and_return_version(p1, session)
+    p1_history.append(_history(p1, t3, version, session))
 
     p1.col2 = 15
     p2.col2 = 12
-    with mock.patch('savage.models.datetime') as p:
-        p.now.return_value = t4
-        versions = add_multiple_and_return_versions([p1, p2], session)
-        p1_history.append(_history(p1, t4, versions[0], session))
-        p2_history.append(_history(p2, t4, versions[1], session))
+    mock_datetime.utcnow.return_value = t4
+    versions = add_multiple_and_return_versions([p1, p2], session)
+    p1_history.append(_history(p1, t4, versions[0], session))
+    p2_history.append(_history(p2, t4, versions[1], session))
 
     return [p1_history, p2_history, p3_history]
 
@@ -101,7 +100,7 @@ def _history(row, ts, version, session):
 
 def assert_result(result, expected, fields=None):
     assert len(result) == len(expected)
-    for res, exp in izip(result, expected):
+    for res, exp in zip(result, expected):
         res = copy.deepcopy(res)
         exp = copy.deepcopy(exp)
         del res['user_id']
@@ -109,7 +108,7 @@ def assert_result(result, expected, fields=None):
         res['data'].pop('id', None)
         del exp['data']['id']
         if fields is not None:
-            for k in exp['data'].keys():
+            for k in list(exp['data'].keys()):
                 if k not in fields:
                     del exp['data'][k]
 
@@ -129,10 +128,10 @@ def test_delete_multi_row(session, user_table, delete_api_test_setup):
         verify_deleted(c, session)
 
 
-def test_delete_rollback(session, user_table, delete_api_test_setup):
+def test_delete_rollback(mocker, session, user_table, delete_api_test_setup):
     conds = [{'product_id': 10}]
     cond_list_1 = _get_conditions_list(user_table, conds)
-    with mock.patch(
+    with mocker.patch(
         'savage.api.data._get_conditions_list',
         side_effect=[cond_list_1, Exception()]
     ):
@@ -315,9 +314,6 @@ def test_get_products_after_version(session, user_table, get_api_test_setup):
 def test_fields_query(session, user_table, get_api_test_setup):
     """Test specifying fields and make sure dedup happens correctly.
     """
-    def prune_data(d, fields):
-        return {k: d[k] for k in fields}
-
     p1_history, p2_history, p3_history = get_api_test_setup
     conds = [{'product_id': 10}]
 
@@ -403,64 +399,64 @@ def test_failure_conditions(session, user_table, get_api_test_setup):
         get(user_table, session, page=-10)
 
 
-def test_paging_results(session, user_table, p1_dict, p1):
+def test_paging_results(mocker, session, user_table, p1_dict, p1):
     t = datetime.utcfromtimestamp(10000)
-    with mock.patch('savage.models.datetime') as p:
-        p.now.return_value = t
-        history = []
-        p1.col2 = 0
+    mock_datetime = mocker.patch('savage.models.datetime')
+    mock_datetime.utcnow.return_value = t
+    history = []
+    p1.col2 = 0
+    version = add_and_return_version(p1, session)
+    history.append(_history(p1, t, version, session))
+    # make 500 changes
+    for i in range(500):
+        p1.col1 = 'foobar' + '1' * ((i + 1) // 10)
+        p1.col2 += 1
+        p1.col3 = i < 250
         version = add_and_return_version(p1, session)
         history.append(_history(p1, t, version, session))
-        # make 500 changes
-        for i in range(500):
-            p1.col1 = 'foobar' + '1' * ((i + 1) / 10)
-            p1.col2 += 1
-            p1.col3 = i < 250
-            version = add_and_return_version(p1, session)
-            history.append(_history(p1, t, version, session))
-        result = get(
-            user_table,
-            session,
-            t1=datetime.utcfromtimestamp(0),
-            t2=datetime.utcfromtimestamp(10000000000),
-            page=1,
-            page_size=1000,
-        )
-        assert_result(result, history)
-        result = get(
-            user_table,
-            session,
-            t1=datetime.utcfromtimestamp(0),
-            t2=datetime.utcfromtimestamp(10000000000),
-            page=1,
-            page_size=100
-        )
-        assert_result(result, history[:100])
-        result = get(
-            user_table,
-            session,
-            t1=datetime.utcfromtimestamp(0),
-            t2=datetime.utcfromtimestamp(10000000000),
-            page=3,
-            page_size=100
-        )
-        assert_result(result, history[200:300])
-        result = get(
-            user_table,
-            session,
-            t1=datetime.utcfromtimestamp(0),
-            t2=datetime.utcfromtimestamp(10000000000),
-            page=5,
-            page_size=100
-        )
-        assert_result(result, history[400:500])
-        result = get(
-            user_table,
-            session,
-            t1=datetime.utcfromtimestamp(0),
-            t2=datetime.utcfromtimestamp(10000000000),
-            fields=['col1'],
-            page=1,
-            page_size=80
-        )
-        assert_result(result, history[0:80:10], fields=['col1'])
+    result = get(
+        user_table,
+        session,
+        t1=datetime.utcfromtimestamp(0),
+        t2=datetime.utcfromtimestamp(10000000000),
+        page=1,
+        page_size=1000,
+    )
+    assert_result(result, history)
+    result = get(
+        user_table,
+        session,
+        t1=datetime.utcfromtimestamp(0),
+        t2=datetime.utcfromtimestamp(10000000000),
+        page=1,
+        page_size=100
+    )
+    assert_result(result, history[:100])
+    result = get(
+        user_table,
+        session,
+        t1=datetime.utcfromtimestamp(0),
+        t2=datetime.utcfromtimestamp(10000000000),
+        page=3,
+        page_size=100
+    )
+    assert_result(result, history[200:300])
+    result = get(
+        user_table,
+        session,
+        t1=datetime.utcfromtimestamp(0),
+        t2=datetime.utcfromtimestamp(10000000000),
+        page=5,
+        page_size=100
+    )
+    assert_result(result, history[400:500])
+    result = get(
+        user_table,
+        session,
+        t1=datetime.utcfromtimestamp(0),
+        t2=datetime.utcfromtimestamp(10000000000),
+        fields=['col1'],
+        page=1,
+        page_size=80
+    )
+    assert_result(result, history[0:80:10], fields=['col1'])

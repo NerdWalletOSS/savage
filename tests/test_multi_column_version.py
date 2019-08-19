@@ -1,4 +1,7 @@
+from __future__ import absolute_import
+
 import pytest
+from six.moves import zip
 from sqlalchemy.exc import IntegrityError
 
 from savage.api import delete

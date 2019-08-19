@@ -1,9 +1,10 @@
+from __future__ import absolute_import
+
 from setuptools import find_packages, setup
 
 install_requires = [
-    'psycopg2>=2.6',
-    'simplejson>=3.0',
-    'six>=1.10.0',
+    'psycopg2>=2.7',
+    'six>=1.12.0',
     'SQLAlchemy>=1.0',
 ]
 test_requires = [
@@ -12,10 +13,10 @@ test_requires = [
     'pytest-mock',
 ]
 dev_requires = test_requires + [
-    'autopep8>=1.3.5',
+    'autopep8>=1.4.4',
     'flake8',
     'ipython',
-    'isort>=4.2.8',
+    'isort>=4.3.21',
 ]
 
 with open('VERSION') as version_fd:
@@ -31,6 +32,9 @@ License :: OSI Approved :: MIT License
 Programming Language :: Python
 Programming Language :: Python :: 2
 Programming Language :: Python :: 2.7
+Programming Language :: Python :: 3
+Programming Language :: Python :: 3.6
+Programming Language :: Python :: 3.7
 Programming Language :: SQL
 Topic :: Database
 Topic :: Database :: Front-Ends
@@ -60,5 +64,7 @@ setup(
         'dev': dev_requires,
         'test': test_requires
     },
+    # Currently `savage` support Python 2.7, and Python 3.6+
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, <4',
     include_package_data=True,
 )

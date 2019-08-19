@@ -17,6 +17,8 @@ Because there is no new row version ID generated during a deletion, the archive 
 version ID to the row version ID without leading to a DB integrity error. Instead, archive rows
 for deleted data use `txid_current()` for version ID (see `SavageLogMixin.build_row_dict`).
 """
+from __future__ import absolute_import
+
 from sqlalchemy import event, insert, inspect
 from sqlalchemy.orm import Session
 

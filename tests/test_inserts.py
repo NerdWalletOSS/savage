@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+
+from six.moves import zip
+
 import savage
 from tests.utils import (
     add_and_return_version,

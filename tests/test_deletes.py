@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from tests.utils import add_and_return_version, verify_archive, verify_deleted_archive, verify_row
 
 

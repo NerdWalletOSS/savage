@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from datetime import datetime
 
 from psycopg2.extensions import AsIs
@@ -73,7 +75,7 @@ class SavageLogMixin(object):
         data = {
             'data': row.to_archivable_dict(dialect, use_dirty=use_dirty),
             'deleted': deleted,
-            'updated_at': datetime.now(),
+            'updated_at': datetime.utcnow(),
             'version_id': current_version_sql(as_is=True) if deleted else row.version_id
         }
         for col_name in row.version_columns:

@@ -1,8 +1,11 @@
+from __future__ import absolute_import
+
 import datetime
 import itertools
+import json
 from functools import partial
 
-import simplejson as json
+from six.moves import zip
 from sqlalchemy import inspect, TypeDecorator, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSON, JSONB
 from sqlalchemy.engine.reflection import Inspector
@@ -15,8 +18,8 @@ def result_to_dict(res):
     :return: a list of dicts where each dict represents a row in the query where the key \
     is the column name and the value is the value of that column.
     """
-    keys = res.keys()
-    return [dict(itertools.izip(keys, row)) for row in res]
+    keys = list(res.keys())
+    return [dict(zip(keys, row)) for row in res]
 
 
 def get_bind_processor(column_type, dialect):

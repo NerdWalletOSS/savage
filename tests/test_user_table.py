@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import pytest
 from sqlalchemy import Column, Integer, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base

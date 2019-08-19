@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import savage
 from tests.models import UnarchivedTable
 

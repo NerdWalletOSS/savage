@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError

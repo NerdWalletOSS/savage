@@ -1,5 +1,8 @@
+from __future__ import absolute_import
+
 from datetime import datetime
 
+import six
 import sqlalchemy as sa
 
 from savage import utils
@@ -185,7 +188,7 @@ def _get_conditions_list(table, conds, archive=True):
         conditions = []
         t = table.ArchiveTable if archive else table
 
-        for col_name, value in cond.iteritems():
+        for col_name, value in six.iteritems(cond):
             if col_name not in table.version_columns:
                 raise ValueError('{} is not one of the unique columns <{}>'.format(
                     col_name, ','.join(table.version_columns)

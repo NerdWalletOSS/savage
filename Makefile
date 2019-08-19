@@ -18,7 +18,7 @@ install: pipenv
 ifdef CI
 	@pipenv install --dev
 else
-	@pipenv install -e --dev .
+	@pipenv install --three --dev -e .
 endif
 
 clean: clean-pyc

@@ -1,4 +1,7 @@
+from __future__ import absolute_import
+
 import pytest
+from six.moves import zip
 
 from tests.models import ArchiveTable, UserTable
 from tests.utils import verify_archive, verify_row

@@ -1,10 +1,12 @@
+from __future__ import absolute_import
+
 import os
 from contextlib import contextmanager
 
 from psycopg2 import connect
 from sqlalchemy.orm import sessionmaker
 
-PG_CONFIG = dict(user='postgres', password='', host='localhost', port=5433)
+PG_CONFIG = dict(user='postgres', password='', host='localhost', port=5543)
 CI_PG_CONFIG = dict(PG_CONFIG, port=5432)
 
 MASTER_DATABASE = 'postgres'
