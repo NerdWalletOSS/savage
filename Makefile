@@ -1,4 +1,3 @@
-ENV := $(shell uname)
 VENV_DIR=venv
 VENV_BIN_DIR=${VENV_DIR}/bin
 VENV_PYTHON=$(VENV_BIN_DIR)/python
@@ -28,6 +27,8 @@ clean: clean-pyc
 clean-pyc:
 	@find ./ -name "*.pyc" -exec rm -rf {} \;
 
+.PHONY: venv install deps clean clean-pyc
+
 # ---- Tests ----
 
 lint:
@@ -40,6 +41,8 @@ endif
 
 tests:
 	@$(VENV_RUN)pytest --cov=. tests
+
+.PHONY: lint tests
 
 # --- Formatting ---
 
@@ -54,6 +57,8 @@ black:
 isort:
 	@$(VENV_RUN)isort -rc -p savage -p tests .
 
+.PHONY: format autopep8 black isort
+
 # --- Tools ---
 
 console:
@@ -62,4 +67,4 @@ console:
 pg_shell:
 	@docker-compose run --rm postgres /usr/bin/psql -h postgres -U postgres
 
-.PHONY: install clean clean-pyc lint tests autopep8 black isort console pg_shell
+.PHONY: console pg_shell
