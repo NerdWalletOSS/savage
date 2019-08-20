@@ -15,7 +15,7 @@ from tests.models import (
 )
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def engine():
     """Session-wide test database engine."""
     drop_test_db()
@@ -41,7 +41,7 @@ def session(engine):
     # Clean up
     _session.close()
     for tablename in Base.metadata.tables.keys():
-        connection.execute('DELETE FROM {}'.format(tablename))
+        connection.execute("DELETE FROM {}".format(tablename))
     connection.close()
 
 
@@ -57,7 +57,7 @@ def user_table():
 
 @pytest.fixture
 def p1_dict():
-    return dict(product_id=10, col1='foobar', col2=10, col3=True)
+    return dict(product_id=10, col1="foobar", col2=10, col3=True)
 
 
 @pytest.fixture
@@ -67,7 +67,7 @@ def p1(user_table, p1_dict):
 
 @pytest.fixture
 def p2_dict():
-    return dict(product_id=11, col1='baz', col2=11, col3=True)
+    return dict(product_id=11, col1="baz", col2=11, col3=True)
 
 
 @pytest.fixture
@@ -77,7 +77,7 @@ def p2(user_table, p2_dict):
 
 @pytest.fixture
 def p3_dict():
-    return dict(product_id=2546, col1='test', col2=12, col3=False)
+    return dict(product_id=2546, col1="test", col2=12, col3=False)
 
 
 @pytest.fixture

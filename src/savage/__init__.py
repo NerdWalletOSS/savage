@@ -36,8 +36,8 @@ def init():
         return
     _initialized = True
 
-    event.listen(Session, 'before_flush', _before_flush_handler)
-    event.listen(Session, 'after_flush', _after_flush_handler)
+    event.listen(Session, "before_flush", _before_flush_handler)
+    event.listen(Session, "after_flush", _after_flush_handler)
 
 
 def is_initialized():
@@ -67,9 +67,9 @@ def _after_flush_handler(session, _flush_context):
         for row in rows:
             if not isinstance(row, SavageModelMixin):
                 continue
-            if not hasattr(row, 'ArchiveTable'):
-                raise LogTableCreationError('Need to register Savage tables!!')
-            user_id = getattr(row, '_updated_by', None)
+            if not hasattr(row, "ArchiveTable"):
+                raise LogTableCreationError("Need to register Savage tables!!")
+            user_id = getattr(row, "_updated_by", None)
             handler(row, session, user_id, dialect)
 
 
@@ -83,7 +83,7 @@ def _versioned_insert(row, *args):
 
 def _versioned_update(row, *args):
     # Do nothing if version_id is unchanged
-    previous_version_id = get_column_attribute(row, 'version_id', use_dirty=False)
+    previous_version_id = get_column_attribute(row, "version_id", use_dirty=False)
     if previous_version_id == row.version_id:
         return
 

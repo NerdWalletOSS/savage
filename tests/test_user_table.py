@@ -15,53 +15,55 @@ def test_register_user_table(engine):
     try:
         # --- Test failure cases ---
         class WrongVersionColumns(SavageModelMixin, Base_):
-            __tablename__ = 'wrong_version_cols'
-            version_columns = ['id']
+            __tablename__ = "wrong_version_cols"
+            version_columns = ["id"]
             pid = Column(Integer, primary_key=True)
 
         class WrongVersionColumnsArchive(SavageLogMixin, Base_):
-            __tablename__ = 'wrong_version_cols_archive'
+            __tablename__ = "wrong_version_cols_archive"
             pid = Column(Integer)
+
         with pytest.raises(LogTableCreationError):
             WrongVersionColumns.register(WrongVersionColumnsArchive, engine)
 
         class NoVersionCols(SavageModelMixin, Base_):
-            __tablename__ = 'no_version_cols'
+            __tablename__ = "no_version_cols"
             pid = Column(Integer, primary_key=True)
 
         class NoVersionColsArchive(SavageLogMixin, Base_):
-            __tablename__ = 'no_version_cols_archive'
+            __tablename__ = "no_version_cols_archive"
             pid = Column(Integer)
+
         with pytest.raises(LogTableCreationError):
             NoVersionCols.register(NoVersionColsArchive, engine)
 
         class NoConstraint(SavageModelMixin, Base_):
-            __tablename__ = 'no_constraint'
-            version_columns = ['pid1', 'pid2']
+            __tablename__ = "no_constraint"
+            version_columns = ["pid1", "pid2"]
             pid1 = Column(Integer, primary_key=True)
             pid2 = Column(Integer)
 
         class NoConstraintArchive(SavageLogMixin, Base_):
-            __tablename__ = 'no_constraint_archive'
+            __tablename__ = "no_constraint_archive"
             pid1 = Column(Integer)
             pid2 = Column(Integer)
+
         with pytest.raises(LogTableCreationError):
             NoConstraint.register(NoConstraintArchive, engine)
 
         # --- Test success cases ---
         class PKConstraint(SavageModelMixin, Base_):
-            __tablename__ = 'pk_constraint'
-            version_columns = ['pid1']
+            __tablename__ = "pk_constraint"
+            version_columns = ["pid1"]
             pid1 = Column(Integer, primary_key=True)
             pid2 = Column(Integer)
 
         class PKConstraintArchive(SavageLogMixin, Base_):
-            __tablename__ = 'pk_constraint_archive'
+            __tablename__ = "pk_constraint_archive"
             pid1 = Column(Integer)
             user_id = Column(Integer)
-            __table_args__ = (
-                UniqueConstraint('pid1', 'version_id', name='pid'),
-            )
+            __table_args__ = (UniqueConstraint("pid1", "version_id", name="pid"),)
+
         Base_.metadata.create_all(engine)
         PKConstraint.register(PKConstraintArchive, engine)
     finally:
@@ -73,9 +75,10 @@ def test_insert_into_unregistered_table_fails(engine, session):
     Base_ = declarative_base()
 
     class UnregisteredTable(SavageModelMixin, Base_):
-        __tablename__ = 'unregistered_table'
+        __tablename__ = "unregistered_table"
         pid = Column(Integer, primary_key=True)
         col1 = Column(Integer)
+
     Base_.metadata.create_all(engine)
     session.add(UnregisteredTable(pid=1, col1=5))
     try:

@@ -23,10 +23,7 @@ def test_insert_after_delete(session, user_table, p1_dict, p1):
     session.delete(p1)
     session.commit()
 
-    p_new = dict(p1_dict, **{
-        'col1': 'changed',
-        'col2': 139,
-    })
+    p_new = dict(p1_dict, **{"col1": "changed", "col2": 139})
     q = user_table(**p_new)
     new_version = add_and_return_version(q, session)
 
@@ -38,7 +35,7 @@ def test_insert_after_delete(session, user_table, p1_dict, p1):
 
 
 def test_delete_with_user(session, user_table, p1_dict, p1):
-    p1.updated_by('test_user')
+    p1.updated_by("test_user")
     version = add_and_return_version(p1, session)
 
     session.delete(p1)
@@ -46,4 +43,4 @@ def test_delete_with_user(session, user_table, p1_dict, p1):
     assert not session.query(user_table).filter_by(product_id=p1.product_id).count()
 
     verify_archive(p1_dict, version, session)
-    verify_deleted_archive(p1_dict, p1, version, session, user_table, user='test_user')
+    verify_deleted_archive(p1_dict, p1, version, session, user_table, user="test_user")

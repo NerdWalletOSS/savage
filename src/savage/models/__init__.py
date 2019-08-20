@@ -24,7 +24,7 @@ from savage.exceptions import LogTableCreationError
 
 
 def current_version_sql(as_is=False):
-    sql_fn = 'txid_current()'
+    sql_fn = "txid_current()"
     if as_is:
         # NOTE: The AsIs construct allows raw SQL to be passed through in `SQLAlchemy.insert`
         return AsIs(sql_fn)
@@ -39,6 +39,7 @@ class SavageLogMixin(object):
       - 1 or more columns which are a subset of columns in the user table. These columns
       must have a unique constraint on the user table and also be named the same in both tables
     """
+
     archive_id = Column(Integer, primary_key=True, autoincrement=True)
     version_id = Column(BigInteger, nullable=False, index=True)
     deleted = Column(Boolean, nullable=False)
@@ -46,15 +47,15 @@ class SavageLogMixin(object):
     data = Column(postgresql.JSONB, nullable=False)
 
     __mapper_args__ = {
-        'eager_defaults': True,  # Avoid unnecessary select to fetch updated_at
-        'version_id_col': version_id,
-        'version_id_generator': False
+        "eager_defaults": True,  # Avoid unnecessary select to fetch updated_at
+        "version_id_col": version_id,
+        "version_id_generator": False,
     }
 
     @declared_attr
     def __table_args__(cls):
         return (
-            Index('index_{}_on_data_gin'.format(cls.__tablename__), 'data', postgresql_using='gin'),
+            Index("index_{}_on_data_gin".format(cls.__tablename__), "data", postgresql_using="gin"),
         )
 
     @classmethod
@@ -73,15 +74,15 @@ class SavageLogMixin(object):
         :rtype: dict
         """
         data = {
-            'data': row.to_archivable_dict(dialect, use_dirty=use_dirty),
-            'deleted': deleted,
-            'updated_at': datetime.utcnow(),
-            'version_id': current_version_sql(as_is=True) if deleted else row.version_id
+            "data": row.to_archivable_dict(dialect, use_dirty=use_dirty),
+            "deleted": deleted,
+            "updated_at": datetime.utcnow(),
+            "version_id": current_version_sql(as_is=True) if deleted else row.version_id,
         }
         for col_name in row.version_columns:
             data[col_name] = utils.get_column_attribute(row, col_name, use_dirty=use_dirty)
         if user_id is not None:
-            data['user_id'] = user_id
+            data["user_id"] = user_id
         return data
 
     @classmethod
@@ -148,12 +149,12 @@ class SavageLogMixin(object):
 
         # Ensure user added a user_id column
         # TODO: should user_id column be optional?
-        user_id = getattr(cls, 'user_id', None)
+        user_id = getattr(cls, "user_id", None)
         if not isinstance(user_id, InstrumentedAttribute):
             raise LogTableCreationError("Log table needs user_id column")
 
         # Check the unique constraint on the versioned columns
-        version_col_names = list(cls._version_col_names) + ['version_id']
+        version_col_names = list(cls._version_col_names) + ["version_id"]
         if not utils.has_constraint(cls, engine, *version_col_names):
             raise LogTableCreationError("There is no unique constraint on the version columns")
 
@@ -163,13 +164,10 @@ class SavageModelMixin(object):
         BigInteger,
         nullable=False,
         server_default=current_version_sql(),
-        onupdate=current_version_sql()
+        onupdate=current_version_sql(),
     )
 
-    __mapper_args__ = {
-        'version_id_col': version_id,
-        'version_id_generator': False
-    }
+    __mapper_args__ = {"version_id_col": version_id, "version_id_generator": False}
 
     ignore_columns = None
     version_columns = None
@@ -184,10 +182,10 @@ class SavageModelMixin(object):
         """
         version_col_names = cls.version_columns
         if not version_col_names:
-            raise LogTableCreationError('Need to specify version cols in cls.version_columns')
+            raise LogTableCreationError("Need to specify version cols in cls.version_columns")
         if cls.ignore_columns is None:
             cls.ignore_columns = set()
-        cls.ignore_columns.add('version_id')
+        cls.ignore_columns.add("version_id")
         version_cols = [getattr(cls, col_name, None) for col_name in version_col_names]
 
         cls._validate(engine, *version_cols)

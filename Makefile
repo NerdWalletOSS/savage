@@ -28,18 +28,25 @@ clean-pyc:
 	@find ./ -name "*.pyc" -exec rm -rf {} \;
 
 # ---- Tests ----
+
 lint:
+	@pipenv run pylint --py3k .
 	@pipenv run flake8
+	@pipenv run isort --check-only -rc -p savage -p tests .
+    @pipenv run black --line-length=100 --check .
 
 tests:
 	@pipenv run pytest --cov=. tests
 
 # --- Formatting ---
 
-format: isort autopep8
+format: isort black autopep8
 
 autopep8:
 	@pipenv run autopep8 --in-place --recursive .
+
+black:
+    @pipenv run black --line-length=100 .
 
 isort:
 	@pipenv run isort -rc -p savage -p tests .
@@ -52,4 +59,4 @@ console:
 pg_shell:
 	@docker-compose run --rm postgres /usr/bin/psql -h postgres -U postgres
 
-.PHONY: install clean clean-pyc lint tests autopep8 isort console pg_shell
+.PHONY: install clean clean-pyc lint tests autopep8 black isort console pg_shell

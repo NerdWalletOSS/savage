@@ -33,7 +33,7 @@ def get_bind_processor(column_type, dialect):
     :param dialect: :py:class:`~sqlalchemy.engine.interfaces.Dialect`
     :return: bind processor for given column type and dialect
     """
-    if column_type.compile(dialect) not in {'JSON', 'JSONB'}:
+    if column_type.compile(dialect) not in {"JSON", "JSONB"}:
         # For non-JSON/JSONB column types, return the column type's bind processor
         return column_type.bind_processor(dialect)
 
@@ -48,6 +48,7 @@ def get_bind_processor(column_type, dialect):
         def wrapped_bind_processor(value):
             json_deserializer = dialect._json_deserializer or json.loads
             return json_deserializer(column_type.bind_processor(dialect)(value))
+
         return wrapped_bind_processor
 
 
@@ -63,6 +64,7 @@ def get_column_attribute(row, col_name, use_dirty=True, dialect=None):
     :return: if :any:`use_dirty`, this will return the value of col_name on the row before it was \
     changed; else this will return getattr(row, col_name)
     """
+
     def identity(x):
         return x
 
@@ -120,14 +122,14 @@ def has_constraint(model, engine, *col_names):  # pragma: no cover
         # Use SQLAlchemy reflection to determine unique constraints
         insp = Inspector.from_engine(engine)
         constraints = itertools.chain(
-            (sorted(x['column_names']) for x in insp.get_unique_constraints(table_name)),
-            sorted(insp.get_pk_constraint(table_name)['constrained_columns']),
+            (sorted(x["column_names"]) for x in insp.get_unique_constraints(table_name)),
+            sorted(insp.get_pk_constraint(table_name)["constrained_columns"]),
         )
         return sorted(col_names) in constraints
     else:
         # Needed to validate test models pre-creation
         constrained_cols = set()
-        for arg in getattr(model, '__table_args__', []):
+        for arg in getattr(model, "__table_args__", []):
             if isinstance(arg, UniqueConstraint):
                 constrained_cols.update([c.name for c in arg.columns])
         for c in model.__table__.columns:
