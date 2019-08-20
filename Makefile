@@ -16,6 +16,7 @@ endif
 
 install: pipenv
 ifdef CI
+	echo $TRAVIS_PYTHON_VERSION
 	@pipenv install --dev
 else
 	@pipenv install --three --dev -e .
@@ -34,7 +35,7 @@ lint:
 	@pipenv run flake8
 	@pipenv run isort --check-only -rc -p savage -p tests .
 ifneq ($(TRAVIS_PYTHON_VERSION),2.7)
-    @pipenv run black --line-length=100 --check .
+	@pipenv run black --line-length=100 --check .
 endif
 
 tests:
