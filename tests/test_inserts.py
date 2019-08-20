@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+
+from six.moves import zip
+
 import savage
 from tests.utils import (
     add_and_return_version,
@@ -28,15 +32,15 @@ def test_insert_multiple_products(session, p1_dict, p1, p2_dict, p2, p3_dict, p3
 
 
 def test_insert_new_product_with_user(session, p1_dict, p1):
-    p1.updated_by('test_user')
+    p1.updated_by("test_user")
     version = add_and_return_version(p1, session)
 
     verify_row(p1_dict, version, session)
-    verify_archive(p1_dict, version, session, user='test_user')
+    verify_archive(p1_dict, version, session, user="test_user")
 
 
 def test_insert_new_product_with_json(session, p1_dict, p1):
-    json_dict = {'foo': 'bar'}
+    json_dict = {"foo": "bar"}
     p1.jsonb_col = json_dict.copy()
     version = add_and_return_version(p1, session)
 

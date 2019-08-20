@@ -1,55 +1,81 @@
-ENV := $(shell uname)
-PIPENV := $(shell command -v pipenv 2> /dev/null)
+VENV_DIR=venv
+VENV_BIN_DIR=${VENV_DIR}/bin
+VENV_PYTHON=$(VENV_BIN_DIR)/python
+VENV_RUN=$(VENV_PYTHON) ${VENV_BIN_DIR}/
+BLACK_ARGS=--exclude=$(VENV_DIR) --line-length=100 .
+ISORT_ARGS=-rc -p savage -p tests .
 
 default: install lint tests
 
 # ---- Install ----
 
-pipenv:
-ifndef PIPENV
-ifeq ($(ENV),Darwin)
-	@brew install pipenv
+venv:
+	# Create a local virtual environment in `venv/`
+ifdef CI
+	# Don't pin Python version in CI; instead, defer to Travis
+	virtualenv --no-site-packages $(VENV_DIR)
 else
-	@pip install pipenv
-endif
+	# Use Python 3.7 for local development
+	virtualenv --no-site-packages --python=python3.7 $(VENV_DIR)
 endif
 
-install: pipenv
-ifdef CI
-	@pipenv install --dev
-else
-	@pipenv install -e --dev .
-endif
+install: venv
+	# Install Python dev dependencies into local venv
+	@$(VENV_RUN)pip install -r requirements.txt -e .[dev]
+
+deps: install
+	# Regenerate `requirements.txt` from `setup.py` using `pip-compile`
+	@$(VENV_RUN)pip-compile --annotate --no-header --no-index --output-file requirements.txt
 
 clean: clean-pyc
-	@-pipenv --rm
+	@rm -fr ${VENV_DIR}
 
 clean-pyc:
 	@find ./ -name "*.pyc" -exec rm -rf {} \;
 
+.PHONY: venv install deps clean clean-pyc
+
 # ---- Tests ----
+
 lint:
-	@pipenv run flake8
+	# Check Python 2/3 compatibility
+	@$(VENV_RUN)pylint --py3k .
+	# Check Python style
+	@$(VENV_RUN)flake8
+	# Check import sorting
+	@$(VENV_RUN)isort --check-only $(ISORT_ARGS)
+	# Check Black formatting
+ifneq ($(TRAVIS_PYTHON_VERSION),2.7)
+	@$(VENV_RUN)black --check $(BLACK_ARGS)
+endif
 
 tests:
-	@pipenv run pytest --cov=. tests
+	# Run pytest with coverage
+	@$(VENV_RUN)pytest --cov=. tests
+
+.PHONY: lint tests
 
 # --- Formatting ---
 
-format: isort autopep8
+format: isort black autopep8
 
 autopep8:
-	@pipenv run autopep8 --in-place --recursive .
+	@$(VENV_RUN)autopep8 --in-place --recursive --exclude=${VENV_DIR} .
+
+black:
+	@$(VENV_RUN)black $(BLACK_ARGS)
 
 isort:
-	@pipenv run isort -rc -p savage -p tests .
+	@$(VENV_RUN)isort $(ISORT_ARGS)
+
+.PHONY: format autopep8 black isort
 
 # --- Tools ---
 
 console:
-	@pipenv run ipython
+	@$(VENV_RUN)ipython
 
 pg_shell:
 	@docker-compose run --rm postgres /usr/bin/psql -h postgres -U postgres
 
-.PHONY: install clean clean-pyc lint tests autopep8 isort console pg_shell
+.PHONY: console pg_shell

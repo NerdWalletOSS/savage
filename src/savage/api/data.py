@@ -1,5 +1,8 @@
+from __future__ import absolute_import
+
 from datetime import datetime
 
+import six
 import sqlalchemy as sa
 
 from savage import utils
@@ -24,9 +27,7 @@ def delete(table, session, conds):
             sa.delete(table.ArchiveTable, whereclause=_get_conditions(archive_conds_list))
         )
         conds_list = _get_conditions_list(table, conds, archive=False)
-        session.execute(
-            sa.delete(table, whereclause=_get_conditions(conds_list))
-        )
+        session.execute(sa.delete(table, whereclause=_get_conditions(conds_list)))
 
 
 def get(
@@ -71,33 +72,35 @@ def get(
     limit, offset = _get_limit_and_offset(page, page_size)
     version_col_names = table.version_columns
     if fields is None:
-        fields = [name for name in utils.get_column_names(table) if name != 'version_id']
+        fields = [name for name in utils.get_column_names(table) if name != "version_id"]
 
     if version_id is not None:
-        return _format_response(utils.result_to_dict(session.execute(
-            sa.select([table.ArchiveTable])
-            .where(table.ArchiveTable.version_id > version_id)
-            .order_by(*_get_order_clause(table.ArchiveTable))
-            .limit(page_size)
-            .offset(offset)
-        )), fields, version_col_names)
+        return _format_response(
+            utils.result_to_dict(
+                session.execute(
+                    sa.select([table.ArchiveTable])
+                    .where(table.ArchiveTable.version_id > version_id)
+                    .order_by(*_get_order_clause(table.ArchiveTable))
+                    .limit(page_size)
+                    .offset(offset)
+                )
+            ),
+            fields,
+            version_col_names,
+        )
 
     if t1 is None and t2 is None:
         rows = _get_latest_time_slice(table, session, conds, include_deleted, limit, offset)
         return _format_response(rows, fields, version_col_names)
 
     if t2 is None:  # return a historical time slice
-        rows = _get_historical_time_slice(
-            table, session, t1, conds, include_deleted, limit, offset
-        )
+        rows = _get_historical_time_slice(table, session, t1, conds, include_deleted, limit, offset)
         return _format_response(rows, fields, version_col_names)
 
     if t1 is None:
         t1 = datetime.utcfromtimestamp(0)
 
-    rows = _get_historical_changes(
-        table, session, conds, t1, t2, include_deleted, limit, offset
-    )
+    rows = _get_historical_changes(table, session, conds, t1, t2, include_deleted, limit, offset)
     return _format_response(rows, fields, version_col_names)
 
 
@@ -126,19 +129,16 @@ def _format_response(rows, fields, unique_col_names):
     old_id = None
     for row in rows:
         id_ = {k: row[k] for k in unique_col_names}
-        formatted = {k: row[k] for k in row if k != 'data'}
+        formatted = {k: row[k] for k in row if k != "data"}
         if id_ != old_id:  # new unique versioned row
-            data = row['data']
-            formatted['data'] = {k: data.get(k) for k in fields}
+            data = row["data"]
+            formatted["data"] = {k: data.get(k) for k in fields}
             output.append(formatted)
         else:
-            data = row['data']
+            data = row["data"]
             pruned_data = {k: data.get(k) for k in fields}
-            if (
-                pruned_data != output[-1]['data'] or
-                row['deleted'] != output[-1]['deleted']
-            ):
-                formatted['data'] = pruned_data
+            if pruned_data != output[-1]["data"] or row["deleted"] != output[-1]["deleted"]:
+                formatted["data"] = pruned_data
                 output.append(formatted)
         old_id = id_
     return output
@@ -180,16 +180,18 @@ def _get_conditions_list(table, conds, archive=True):
     all_conditions = []
     for cond in conds:
         if len(cond) != len(table.version_columns):
-            raise ValueError('Conditions must specify all unique constraints.')
+            raise ValueError("Conditions must specify all unique constraints.")
 
         conditions = []
         t = table.ArchiveTable if archive else table
 
-        for col_name, value in cond.iteritems():
+        for col_name, value in six.iteritems(cond):
             if col_name not in table.version_columns:
-                raise ValueError('{} is not one of the unique columns <{}>'.format(
-                    col_name, ','.join(table.version_columns)
-                ))
+                raise ValueError(
+                    "{} is not one of the unique columns <{}>".format(
+                        col_name, ",".join(table.version_columns)
+                    )
+                )
             conditions.append(getattr(t, col_name) == value)
         all_conditions.append(conditions)
     return all_conditions
@@ -199,17 +201,20 @@ def _get_historical_changes(table, session, conds, t1, t2, include_deleted, limi
     pk_conditions = _get_conditions_list(table, conds)
     and_clause = _get_conditions(
         pk_conditions,
-        [table.ArchiveTable.updated_at >= t1, table.ArchiveTable.updated_at < t2] +
-        [] if include_deleted else [table.ArchiveTable.deleted.is_(False)],
+        [table.ArchiveTable.updated_at >= t1, table.ArchiveTable.updated_at < t2] + []
+        if include_deleted
+        else [table.ArchiveTable.deleted.is_(False)],
     )
 
-    return utils.result_to_dict(session.execute(
-        sa.select([table.ArchiveTable])
-        .where(and_clause)
-        .order_by(*_get_order_clause(table.ArchiveTable))
-        .limit(limit)
-        .offset(offset)
-    ))
+    return utils.result_to_dict(
+        session.execute(
+            sa.select([table.ArchiveTable])
+            .where(and_clause)
+            .order_by(*_get_order_clause(table.ArchiveTable))
+            .limit(limit)
+            .offset(offset)
+        )
+    )
 
 
 def _get_historical_time_slice(table, session, t, conds, include_deleted, limit, offset):
@@ -218,26 +223,29 @@ def _get_historical_time_slice(table, session, t, conds, include_deleted, limit,
     pk_conditions = _get_conditions_list(table, conds)
     and_clause = _get_conditions(
         pk_conditions,
-        [at.updated_at <= t] +
-        [] if include_deleted else [table.ArchiveTable.deleted.is_(False)],
+        [at.updated_at <= t] + [] if include_deleted else [table.ArchiveTable.deleted.is_(False)],
     )
-    t2 = at.__table__.alias('t2')
-    return utils.result_to_dict(session.execute(
-        sa.select([at])
-        .select_from(at.__table__.join(
-            t2,
-            sa.and_(
-                t2.c.updated_at <= t,
-                at.version_id < t2.c.version_id,
-                *[getattr(at, c) == getattr(t2.c, c) for c in vc]
-            ),
-            isouter=True,
-        ))
-        .where(t2.c.version_id.is_(None) & and_clause)
-        .order_by(*_get_order_clause(at))
-        .limit(limit)
-        .offset(offset)
-    ))
+    t2 = at.__table__.alias("t2")
+    return utils.result_to_dict(
+        session.execute(
+            sa.select([at])
+            .select_from(
+                at.__table__.join(
+                    t2,
+                    sa.and_(
+                        t2.c.updated_at <= t,
+                        at.version_id < t2.c.version_id,
+                        *[getattr(at, c) == getattr(t2.c, c) for c in vc]
+                    ),
+                    isouter=True,
+                )
+            )
+            .where(t2.c.version_id.is_(None) & and_clause)
+            .order_by(*_get_order_clause(at))
+            .limit(limit)
+            .offset(offset)
+        )
+    )
 
 
 def _get_latest_time_slice(table, session, conds, include_deleted, limit, offset):
@@ -246,7 +254,8 @@ def _get_latest_time_slice(table, session, conds, include_deleted, limit, offset
         [] if include_deleted else [table.ArchiveTable.deleted.is_(False)],
     )
     result = session.execute(
-        sa.select([table.ArchiveTable]).select_from(
+        sa.select([table.ArchiveTable])
+        .select_from(
             table.ArchiveTable.__table__.join(
                 table,
                 sa.and_(
@@ -255,7 +264,7 @@ def _get_latest_time_slice(table, session, conds, include_deleted, limit, offset
                         getattr(table.ArchiveTable, col_name) == getattr(table, col_name)
                         for col_name in table.version_columns
                     ]
-                )
+                ),
             )
         )
         .where(and_clause)
@@ -270,7 +279,7 @@ def _get_limit_and_offset(page, page_size):
     """Returns a 0-indexed offset and limit based on page and page_size for a MySQL query.
     """
     if page < 1:
-        raise ValueError('page must be >= 1')
+        raise ValueError("page must be >= 1")
     limit = page_size
     offset = (page - 1) * page_size
     return limit, offset

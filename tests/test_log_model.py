@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from datetime import datetime
 
 import pytest
@@ -21,39 +23,44 @@ def test_register_bad_archive_table_fails(engine):
     try:
         # no product_id column
         class ArchiveNoFKey(SavageLogMixin, Base_):
-            __tablename__ = 'no_fkey'
+            __tablename__ = "no_fkey"
             user_id = Column(String(50))
+
         with pytest.raises(LogTableCreationError):
             UserTable.register(ArchiveNoFKey, engine)
 
         # product_id is not the same type as product_id
         class ArchiveWrongFKey(SavageLogMixin, Base_):
-            __tablename__ = 'wrong_fkey'
+            __tablename__ = "wrong_fkey"
             product_id = Column(String(10))
             user_id = Column(String(50))
+
         with pytest.raises(LogTableCreationError):
             UserTable.register(ArchiveWrongFKey, engine)
 
         # column is named something different
         class ArchiveWrongName(SavageLogMixin, Base_):
-            __tablename__ = 'wrong_name'
+            __tablename__ = "wrong_name"
             foo = Column(String(10))
             user_id = Column(String(50))
+
         with pytest.raises(LogTableCreationError):
             UserTable.register(ArchiveWrongName, engine)
 
         # user did not add user_id column
         class ArchiveNoUserId(SavageLogMixin, Base_):
-            __tablename__ = 'no_user_id'
+            __tablename__ = "no_user_id"
             product_id = Column(Integer, nullable=False)
+
         with pytest.raises(LogTableCreationError):
             UserTable.register(ArchiveNoUserId, engine)
 
         # no unique constraint on version column
         class ArchiveNoConstraint(SavageLogMixin, Base_):
-            __tablename__ = 'no_constraint'
+            __tablename__ = "no_constraint"
             product_id = Column(Integer)
             user_id = Column(String(50))
+
         with pytest.raises(LogTableCreationError):
             UserTable.register(ArchiveNoConstraint, engine)
     finally:
@@ -70,19 +77,19 @@ def test_archive_table_collision_fails_1(session, user_table, p1):
     add_and_return_version(p1, session)
 
     to_insert = {
-        'deleted': False,
-        'user_id': 'bar',
-        'updated_at': datetime.now(),
-        'data': {},
-        'product_id': p1.product_id,
+        "deleted": False,
+        "user_id": "bar",
+        "updated_at": datetime.now(),
+        "data": {},
+        "product_id": p1.product_id,
     }
     session.add(user_table.ArchiveTable(**to_insert))
     to_insert = {
-        'deleted': True,
-        'user_id': 'foo',
-        'updated_at': datetime.now(),
-        'data': {},
-        'product_id': p1.product_id,
+        "deleted": True,
+        "user_id": "foo",
+        "updated_at": datetime.now(),
+        "data": {},
+        "product_id": p1.product_id,
     }
     session.add(user_table.ArchiveTable(**to_insert))
     with pytest.raises(IntegrityError):
