@@ -49,7 +49,7 @@ autopep8:
 	@pipenv run autopep8 --in-place --recursive .
 
 black:
-    @pipenv run black --line-length=100 .
+	@pipenv run black --line-length=100 .
 
 isort:
 	@pipenv run isort -rc -p savage -p tests .
