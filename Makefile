@@ -16,7 +16,7 @@ endif
 
 install: pipenv
 ifdef CI
-	echo $TRAVIS_PYTHON_VERSION
+	@echo "Current Python version: $(TRAVIS_PYTHON_VERSION)";
 	@pipenv install --dev
 else
 	@pipenv install --three --dev -e .
