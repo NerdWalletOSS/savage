@@ -2,23 +2,29 @@ VENV_DIR=venv
 VENV_BIN_DIR=${VENV_DIR}/bin
 VENV_PYTHON=$(VENV_BIN_DIR)/python
 VENV_RUN=$(VENV_PYTHON) ${VENV_BIN_DIR}/
+BLACK_ARGS=--exclude=$(VENV_DIR) --line-length=100 .
+ISORT_ARGS=-rc -p savage -p tests .
 
 default: install lint tests
 
 # ---- Install ----
 
 venv:
+	# Create a local virtual environment in `venv/`
 ifdef CI
-	@echo "Current Python version: $(TRAVIS_PYTHON_VERSION)";
-	virtualenv --no-site-packages venv
+	# Don't pin Python version in CI; instead, defer to Travis
+	virtualenv --no-site-packages $(VENV_DIR)
 else
-	virtualenv --no-site-packages --python=python3.7 venv
+	# Use Python 3.7 for local development
+	virtualenv --no-site-packages --python=python3.7 $(VENV_DIR)
 endif
 
 install: venv
+	# Install Python dev dependencies into local venv
 	@$(VENV_RUN)pip install -r requirements.txt -e .[dev]
 
 deps: install
+	# Regenerate `requirements.txt` from `setup.py` using `pip-compile`
 	@$(VENV_RUN)pip-compile --annotate --no-header --no-index --output-file requirements.txt
 
 clean: clean-pyc
@@ -32,14 +38,19 @@ clean-pyc:
 # ---- Tests ----
 
 lint:
+	# Check Python 2/3 compatibility
 	@$(VENV_RUN)pylint --py3k .
+	# Check Python style
 	@$(VENV_RUN)flake8
-	@$(VENV_RUN)isort --check-only -rc -p savage -p tests .
+	# Check import sorting
+	@$(VENV_RUN)isort --check-only $(ISORT_ARGS)
+	# Check Black formatting
 ifneq ($(TRAVIS_PYTHON_VERSION),2.7)
-	@$(VENV_RUN)black --exclude=$(VENV_DIR) --line-length=100 --check .
+	@$(VENV_RUN)black --check $(BLACK_ARGS)
 endif
 
 tests:
+	# Run pytest with coverage
 	@$(VENV_RUN)pytest --cov=. tests
 
 .PHONY: lint tests
@@ -52,10 +63,10 @@ autopep8:
 	@$(VENV_RUN)autopep8 --in-place --recursive --exclude=${VENV_DIR} .
 
 black:
-	@$(VENV_RUN)black --exclude=$(VENV_DIR) --line-length=100 .
+	@$(VENV_RUN)black $(BLACK_ARGS)
 
 isort:
-	@$(VENV_RUN)isort -rc -p savage -p tests .
+	@$(VENV_RUN)isort $(ISORT_ARGS)
 
 .PHONY: format autopep8 black isort
 
