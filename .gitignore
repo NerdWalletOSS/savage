@@ -20,10 +20,6 @@ docs/_build/
 # virtualenv
 venv/
 
-# pipenv
-.venv/
-Pipfile.lock
-
 # Project files
 .idea/
 
