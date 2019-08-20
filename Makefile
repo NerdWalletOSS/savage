@@ -33,7 +33,9 @@ lint:
 	@pipenv run pylint --py3k .
 	@pipenv run flake8
 	@pipenv run isort --check-only -rc -p savage -p tests .
+ifneq ($(TRAVIS_PYTHON_VERSION),2.7)
     @pipenv run black --line-length=100 --check .
+endif
 
 tests:
 	@pipenv run pytest --cov=. tests
