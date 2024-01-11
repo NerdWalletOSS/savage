@@ -11,13 +11,7 @@ default: install lint tests
 
 venv:
 	# Create a local virtual environment in `venv/`
-ifdef CI
-	# Don't pin Python version in CI; instead, defer to Travis
-	virtualenv --no-site-packages $(VENV_DIR)
-else
-	# Use Python 3.7 for local development
-	virtualenv --no-site-packages --python=python3.7 $(VENV_DIR)
-endif
+	python -mvenv $(VENV_DIR)
 
 install: venv
 	# Install Python dev dependencies into local venv
@@ -51,7 +45,7 @@ endif
 
 tests:
 	# Run pytest with coverage
-	@$(VENV_RUN)pytest --cov=. tests
+	@SQLALCHEMY_WARN_20=1 $(VENV_RUN)pytest --cov=. tests
 
 .PHONY: lint tests
 
