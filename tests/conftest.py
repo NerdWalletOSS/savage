@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 import savage
 from savage.utils import savage_json_serializer
@@ -41,7 +41,7 @@ def session(engine):
     # Clean up
     _session.close()
     for tablename in Base.metadata.tables.keys():
-        connection.execute("DELETE FROM {}".format(tablename))
+        connection.execute(text("DELETE FROM {}".format(tablename)))
     connection.close()
 
 

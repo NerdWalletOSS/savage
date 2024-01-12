@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from setuptools import find_packages, setup
 
-install_requires = ["psycopg2>=2.7", "six>=1.12.0", "SQLAlchemy>=1.0"]
+install_requires = ["psycopg2>=2.7", "six>=1.12.0", "SQLAlchemy>=1.4"]
 test_requires = ["pytest", "pytest-cov", "pytest-mock"]
 dev_requires = test_requires + [
     "autopep8>=1.4.4",
@@ -30,6 +30,8 @@ Programming Language :: Python :: 2.7
 Programming Language :: Python :: 3
 Programming Language :: Python :: 3.6
 Programming Language :: Python :: 3.7
+Programming Language :: Python :: 3.8
+Programming Language :: Python :: 3.9
 Programming Language :: SQL
 Topic :: Database
 Topic :: Database :: Front-Ends

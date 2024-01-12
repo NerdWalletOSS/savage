@@ -45,7 +45,7 @@ endif
 
 tests:
 	# Run pytest with coverage
-	@$(VENV_RUN)pytest --cov=. tests
+	@SQLALCHEMY_WARN_20=1 $(VENV_RUN)pytest --cov=. tests
 
 .PHONY: lint tests
 
