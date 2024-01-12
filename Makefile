@@ -10,7 +10,7 @@ default: install lint tests
 # ---- Install ----
 
 venv:
-	# Create a local virtual environment in `venv/`
+	# Use Python 3.9 for local development
 	python -mvenv $(VENV_DIR)
 
 install: venv

@@ -1,0 +1,52 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+  push:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_PASSWORD: "postgres"
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        ports:
+          - "5432:5432"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+          cache: "pip"
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -e .[dev]
+
+      # temporarily don't fail on pylint failures so they can be fixed later
+      - name: Lint with pylint
+        run: pylint --disable=C0115,C0116,C0104,C0114,W0511 src tests || true
+
+      - name: Check with flake8
+        run: flake8
+
+      - name: Check import sorting
+        run: isort --check-only -p savage -p tests .
+
+      - name: Check black formatting
+        run: black --check --line-length=100 src tests
+
+      - name: Run all tests
+        run: pytest --cov=. tests

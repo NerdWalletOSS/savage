@@ -6,7 +6,7 @@ install_requires = ["psycopg2>=2.7", "six>=1.12.0", "SQLAlchemy>=1.4"]
 test_requires = ["pytest", "pytest-cov", "pytest-mock"]
 dev_requires = test_requires + [
     "autopep8>=1.4.4",
-    "black>=23",
+    "black>=23.12.1",
     "flake8",
     "ipython",
     "isort>=4.3.21",

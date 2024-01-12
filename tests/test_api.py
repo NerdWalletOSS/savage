@@ -276,8 +276,7 @@ def test_get_products_after_version(session, user_table, get_api_test_setup):
 
 
 def test_fields_query(session, user_table, get_api_test_setup):
-    """Test specifying fields and make sure dedup happens correctly.
-    """
+    """Test specifying fields and make sure dedup happens correctly."""
     p1_history, p2_history, p3_history = get_api_test_setup
     conds = [{"product_id": 10}]
 
@@ -329,8 +328,7 @@ def test_fields_query(session, user_table, get_api_test_setup):
 
 
 def test_failure_conditions(session, user_table, get_api_test_setup):
-    """Pass invalid conds arguments and ensure the query fails.
-    """
+    """Pass invalid conds arguments and ensure the query fails."""
     conds = [{"product_id": 10, "foo": 15}]
     with pytest.raises(ValueError):
         get(user_table, session, t1=datetime.utcfromtimestamp(31), conds=conds)
