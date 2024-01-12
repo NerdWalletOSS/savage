@@ -23,4 +23,4 @@ jobs:
           pip install -r requirements.txt -e .[dev]
       - name: Lint with pylint
         run: |
-          pylint --disable=R,C,W1203 --py3k .
+          pylint .
