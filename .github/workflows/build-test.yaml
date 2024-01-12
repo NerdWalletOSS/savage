@@ -1,4 +1,4 @@
-name: Python package
+name: PR Checks
 
 on:
   pull_request:
@@ -19,13 +19,6 @@ jobs:
           python-version: "3.9"
           cache: "pip"
 
-      # this caches the entire python installation, including all packages, so that we don't have to reinstall them every time
-      # we run this action. This is a huge time saver.
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.pythonLocation }}
-          key: ${{ env.pythonLocation }}-${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}
-
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
@@ -43,3 +36,6 @@ jobs:
 
       - name: Check black formatting
         run: black --check --line-length=100 src tests
+
+      - name: Run all tests
+        run: pytest --cov=. tests
