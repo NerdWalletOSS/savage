@@ -42,4 +42,4 @@ jobs:
         run: isort --check-only -p savage -p tests .
 
       - name: Check black formatting
-        run: black --check --exclude=$(VENV_DIR) --line-length=100 .
+        run: black --check --line-length=100 src tests
